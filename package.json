@@ -1,0 +1,20 @@
+{
+  "name": "ariza-defteri",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Arıza Defteri: depo ekipmanı için ortak arıza kayıt servisi + hikâyeli sentetik veri üreticisi (web + API + MCP). Nabız, Usta ve Emanet buradan okur.",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "start:dev": "DATA_DIR=./tmp/data APP_URL=http://localhost:8080/ node --disable-warning=ExperimentalWarning server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-timeout=60000 tests/*.test.js",
+    "uret": "node --disable-warning=ExperimentalWarning tools/uret.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "_aciklama": "Sentetik veri üreticisinin ayarları. Kodu değiştirmeden desenler buradan ayarlanır. Değişiklik yeni üretilen günlere yansır; eski günleri yeniden üretmek için: node tools/uret.js --yeniden --gun 180",
+  "surum": "3",
+  "tohum": "yildiz-ev-yasam",
+  "yogunluk": 3,
+  "yasCarpaniYil": 0.08,
+  "gunCarpani": { "0": 0.5, "6": 0.85 },
+  "geceCarpani": 0.6,
+  "sezon": { "1": 0.9, "7": 1.1, "8": 1.1, "11": 1.35, "12": 1.25 },
+  "bakim": {
+    "referans": "2024-01-01",
+    "gecikmeOlasiligi": 0.25,
+    "gecikmeGun": [5, 15]
+  },
+  "asinmaSinir": [0.15, 4],
+  "tekrarlayan": [
+    {
+      "ekipman": "RT-03",
+      "tur": "RT-HID",
+      "haftaGunu": 5,
+      "vardiyalar": [1, 2],
+      "olasilik": 0.65,
+      "aciklama": "Reach truck 3 cuma günleri hidrolik sorunu çıkarır (perşembe gecesi şarj sırasında yağ ısınıyor; kimse fark etmedi). Nabız'ın Pareto'su bunu yakalamalı."
+    }
+  ],
+  "otonomBakim": [
+    {
+      "tip": "forklift",
+      "baslangic": "2026-09-01",
+      "arizaCarpani": 0.7,
+      "kucukDurusCarpani": 0.85,
+      "aciklama": "Forkliftlerde vardiya başı otonom bakım kontrolü 1 Eylül 2026'da başladı: büyük arızalar azaldı."
+    }
+  ],
+  "izin": {
+    "ceyrekBasinaGun": [5, 10],
+    "aciklama": "Her teknisyen her çeyrekte bir kez izne çıkar. Murat Kaya izindeyken sorter onarımları uzar."
+  },
+  "cozum": {
+    "uzmanlikUssu": 3,
+    "vardiyaDisiAgirlik": 0.5,
+    "vardiyaDisiBeklemeDk": 30,
+    "zayifEsik": 0.5,
+    "zayifCarpan": 2.2,
+    "ortaEsik": 0.8,
+    "ortaCarpan": 1.3
+  },
+  "saklamaGun": 365
+}

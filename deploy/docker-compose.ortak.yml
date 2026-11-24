@@ -1,0 +1,39 @@
+# ysfdurak.com ortak altyapısında çalıştırma.
+# Caddy (HTTPS) ortak altyapıda: github.com/ysfdurak/ysfdurak.com → sunucu/
+#   cd deploy && sudo docker compose -f docker-compose.ortak.yml up -d --build
+# Arıza Defteri hiçbir portu dışarı açmaz; ortak Caddy "web" ağı üzerinden ariza-defteri:8080'e ulaşır.
+# Nabız, Usta ve Emanet aynı "web" ağından http://ariza-defteri:8080/v1/... adresiyle okur (internete çıkmadan).
+name: ariza-defteri
+services:
+  ariza-defteri:
+    build: ..
+    container_name: ariza-defteri
+    env_file: ../.env
+    volumes:
+      - ariza-data:/data
+    restart: unless-stopped
+    # Sertleştirme: kök dosya sistemi salt okunur, yazma yalnız /data ve /tmp'de; Linux yetkileri kapalı,
+    # yetki yükseltme yok; bellek, süreç ve kayıt boyutu sınırlı.
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 256m
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+
+volumes:
+  ariza-data: {}

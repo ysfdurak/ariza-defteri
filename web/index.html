@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <!-- Aynı politika sunucu başlığında da var (frame-ancestors yalnız orada); bu satır dosya başka yerden sunulursa korur. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arıza Defteri · Yıldız Ev & Yaşam deposu</title>
+  <meta name="description" content="Depo ekipmanı için ortak arıza kayıt servisi: canlı akış, Pareto, MTBF/MTTR, kim çözüyor. Veri sentetiktir.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="ust">
+    <div class="sarmal ust-ic">
+      <div>
+        <h1>Arıza Defteri</h1>
+        <p class="alt">Yıldız Ev &amp; Yaşam deposu · forklift, reach truck, konveyör, sorter ve streç makinesi arızaları</p>
+      </div>
+      <div class="ust-sag">
+        <span class="rozet canli"><span class="nokta"></span>Sentetik veri · canlı</span>
+        <span class="guncel" id="guncel">Yükleniyor…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="sarmal">
+    <p class="hata gizli" id="hata" role="alert"></p>
+
+    <section class="kpiler" aria-label="Özet göstergeler">
+      <div class="kpi"><span class="kpi-ad">Son 24 saat arıza</span><strong id="k-adet">–</strong><span class="kpi-not">planlı bakım hariç</span></div>
+      <div class="kpi"><span class="kpi-ad">Şu an açık</span><strong id="k-acik">–</strong><span class="kpi-not">onarımı süren</span></div>
+      <div class="kpi"><span class="kpi-ad">Son 24 saat duruş</span><strong id="k-durus">–</strong><span class="kpi-not">kapanan arızalar</span></div>
+      <div class="kpi"><span class="kpi-ad">Kullanılabilirlik</span><strong id="k-kul">–</strong><span class="kpi-not">son 30 gün, ekipman ortalaması</span></div>
+    </section>
+
+    <div class="izgara">
+      <section class="kart" aria-labelledby="b-akis">
+        <h2 id="b-akis">Canlı akış</h2>
+        <p class="aciklama">Son kayıtlar. Gelecek saatlerin kaydı önceden yazılı ama saati gelmeden görünmez.</p>
+        <ol class="akis" id="akis"></ol>
+      </section>
+
+      <div class="yan">
+        <section class="kart" aria-labelledby="b-bulgu">
+          <h2 id="b-bulgu">Dikkat çekenler</h2>
+          <p class="aciklama">Son 90 günün verisinden kurallarla çıkarıldı.</p>
+          <ul class="bulgular" id="bulgular"></ul>
+        </section>
+
+        <section class="kart" aria-labelledby="b-kim">
+          <h2 id="b-kim">Kim çözüyor</h2>
+          <p class="aciklama">Ekipman tipine göre teknisyen payı, son 90 gün. Operatörün kendi giderdiği basit duruşlar hariç.</p>
+          <ul class="kimler" id="kimler"></ul>
+        </section>
+      </div>
+    </div>
+
+    <section class="kart" aria-labelledby="b-pareto">
+      <h2 id="b-pareto">Pareto · son 30 gün</h2>
+      <p class="aciklama">Arıza türleri toplam duruş süresine göre. Sağdaki yüzde kümülatif paydır.</p>
+      <ol class="pareto" id="pareto"></ol>
+      <div class="kayiplar" id="kayiplar" aria-label="6 büyük kayıp"></div>
+    </section>
+
+    <section class="kart" aria-labelledby="b-ekipman">
+      <h2 id="b-ekipman">Ekipman · son 30 gün</h2>
+      <p class="aciklama">MTTR: ortalama onarım süresi. MTBF: arızalar arası ortalama çalışma süresi. Planlı bakım arıza sayılmaz.</p>
+      <div class="tablo-kap">
+        <table>
+          <thead>
+            <tr><th scope="col">Ekipman</th><th scope="col" class="sag">Arıza</th><th scope="col" class="sag">Duruş</th><th scope="col" class="sag">MTTR</th><th scope="col" class="sag">MTBF</th><th scope="col" class="sag">Kullanılabilirlik</th><th scope="col">En sık</th><th scope="col">Bakım</th></tr>
+          </thead>
+          <tbody id="ekipman"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sarmal alt-bilgi">
+    <p><strong>Veri sentetiktir.</strong> Her gün kurallı ve hikâyeli desenlerle üretilir: yaşlanan ekipman sık bozulur, bakımı geciken daha da sık, bir reach truck'ın tekrarlayan sorunu, tek kişiye bağlı bir ekipman. Desenleri bulmak bu panonun işi.</p>
+    <p>API: <a href="/v1/durum">/v1/durum</a> · <a href="/v1/arizalar?gun=1">/v1/arizalar</a> · <a href="/v1/ozet">/v1/ozet</a> · <a href="/v1/cozenler">/v1/cozenler</a> · <a href="/v1/bulgular">/v1/bulgular</a> · <a href="/v1/ana-veriler">/v1/ana-veriler</a></p>
+    <p>Kaynak kodu: <a href="https://github.com/ysfdurak/ariza-defteri" rel="noopener">github.com/ysfdurak/ariza-defteri</a> · PolyForm Shield 1.0.0 · <a href="https://ysfdurak.com" rel="noopener">ysfdurak.com</a></p>
+  </footer>
+</body>
+</html>
