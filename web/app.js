@@ -1,3 +1,15 @@
+// Anonim kullanım ölçümü ve geri bildirim düğmesi (ortak servis: olcum.ysfdurak.com; kaynak: ysfdurak.com → sunucu/olcum).
+// Yalnız resmî demo adresinde yüklenir: kurum kurulumları dışarıya hiç istek atmaz.
+// Gönderilenler: ekran adı ("pano"), aktif süre, cihaz türü, dil. Arıza kaydı içeriği gönderilmez; çerez yok; DNT/GPC'ye uyar.
+if (location.hostname === 'ariza.ysfdurak.com') {
+  (window.olcumKuyruk ||= []).push(['ekran', 'pano']);
+  const s = document.createElement('script');
+  s.src = 'https://olcum.ysfdurak.com/olcum.js';
+  s.defer = true;
+  s.dataset.proje = 'ariza';
+  document.head.appendChild(s);
+}
+
 // Arıza Defteri arayüzü. Tek istek (/v1/pano), dakikada bir yenilenir.
 // Güvenlik: sayfaya giden her metin textContent ile yazılır; innerHTML kullanılmaz.
 'use strict';

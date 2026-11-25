@@ -9,8 +9,9 @@ import { createMcpHandler } from './mcp.js';
 
 const TURLER = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8' };
 const GOVDE_SINIRI = 8 * 1024;
-// Arayüz yalnız kendi dosyalarını ve kendi API'sini kullanır: dış betik, yazı tipi, analitik yok.
-const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
+// Arayüz kendi dosyalarını ve kendi API'sini kullanır; tek dış adres ortak ölçüm servisi (olcum.ysfdurak.com),
+// betiği de yalnız resmî demo adresinde yüklenir (web/app.js). Dış yazı tipi yok.
+const CSP = "default-src 'self'; script-src 'self' https://olcum.ysfdurak.com; style-src 'self'; img-src 'self' data:; connect-src 'self' https://olcum.ysfdurak.com; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
 
 /**
  * @param {object} o
