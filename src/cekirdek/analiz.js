@@ -60,7 +60,7 @@ export function ekipmanOzeti(kayitlar, gunSayisi, bugun) {
       mtbfSaat: arizalar.length ? yuvarla((calisma - durusDk / 60) / arizalar.length) : null,
       kullanilabilirlik: calisma > 0 ? yuvarla(Math.max(0, 1 - durusDk / 60 / calisma), 3) : null,
       enSikTur: enSik ? { kod: enSik[0], ad: turBul(enSik[0])?.ad, adet: enSik[1] } : null,
-      bakim: { sonBakim: b.sonBakim, sonrakiPlan: b.sonrakiPlan, gecikmede: b.gecikmede, gecikmeGun: b.gecikmeGun },
+      bakim: { sonBakim: b.sonBakim, sonrakiPlan: b.sonrakiPlan, gecikmede: b.gecikmede, gecikmeGun: b.gecikmeGun, bakimdanBeriSaat: b.bakimdanBeriSaat, periyotSaat: b.periyotSaat },
     };
   });
 }

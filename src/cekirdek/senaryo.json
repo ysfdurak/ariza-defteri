@@ -1,11 +1,16 @@
 {
   "_aciklama": "Sentetik veri üreticisinin ayarları. Kodu değiştirmeden desenler buradan ayarlanır. Değişiklik yeni üretilen günlere yansır; eski günleri yeniden üretmek için: node tools/uret.js --yeniden --gun 180",
-  "surum": "3",
+  "surum": "4",
   "tohum": "yildiz-ev-yasam",
   "yogunluk": 3,
   "yasCarpaniYil": 0.08,
   "gunCarpani": { "0": 0.5, "6": 0.85 },
   "geceCarpani": 0.6,
+  "kullanim": {
+    "doluluk": 0.75,
+    "oynama": 0.1,
+    "_aciklama": "Ekipmanın vardiyada kullanıldığı süre: 480 dk × doluluk × sezon × hafta günü × gece (± oynama). Arıza olasılığı ve aşınma bu süreyle ilerler (surum 4)."
+  },
   "sezon": { "1": 0.9, "7": 1.1, "8": 1.1, "11": 1.35, "12": 1.25 },
   "bakim": {
     "referans": "2024-01-01",
