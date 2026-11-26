@@ -65,8 +65,10 @@ export const EKIPMANLAR = [
  *   Nabız Analiz bunu veriden kör tahmin eder; testler tahminin gerçeğe yakın çıktığını denetler.
  */
 export const ARIZA_TURLERI = [
-  { kod: 'FL-AKU', operator: true, tip: 'forklift', ad: 'Akü şarjı bitti / bağlantı gevşek', kayip: 'kucuk_durus', oran: 0.022, mttr: 15, uzmanlik: 'aku', onem: 'dusuk',
-    islemler: ['Akü değiştirildi', 'Şarj soketi temizlendi ve sıkıldı', 'Akü şarja alındı, yedek akü takıldı'] },
+  // Akü şarjının bitmesi arıza değildir (şarj planı işidir, kayda girmez; surum 5). Burada yalnız soketin ya da kablonun
+  // gerçekten hasar görmesi var: seyrek, teknisyen gerekir.
+  { kod: 'FL-AKU', tip: 'forklift', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.0015, mttr: 45, uzmanlik: 'aku', onem: 'orta',
+    islemler: ['Akü soketi değiştirildi', 'Akü kablosu ve pabucu yenilendi'] },
   { kod: 'FL-HID', tip: 'forklift', ad: 'Hidrolik kaçak', kayip: 'ariza', oran: 0.009, mttr: 75, asinma: 1.6, uzmanlik: 'hidrolik', onem: 'yuksek',
     islemler: ['Hidrolik hortum değiştirildi', 'Rakor sıkıldı, yağ tamamlandı', 'Silindir contası değiştirildi'] },
   { kod: 'FL-LAS', tip: 'forklift', ad: 'Lastik hasarı', kayip: 'ariza', oran: 0.006, mttr: 60, asinma: 1.8, uzmanlik: 'mekanik', onem: 'orta',
@@ -80,8 +82,8 @@ export const ARIZA_TURLERI = [
 
   { kod: 'RT-HID', tip: 'reach_truck', ad: 'Hidrolik kaçak / basınç düşük', kayip: 'ariza', oran: 0.010, mttr: 90, asinma: 1.5, uzmanlik: 'hidrolik', onem: 'yuksek',
     islemler: ['Hidrolik pompa contası değiştirildi', 'Hidrolik hortum değiştirildi', 'Basınç valfi ayarlandı'] },
-  { kod: 'RT-AKU', operator: true, tip: 'reach_truck', ad: 'Akü şarjı bitti / bağlantı gevşek', kayip: 'kucuk_durus', oran: 0.018, mttr: 15, uzmanlik: 'aku', onem: 'dusuk',
-    islemler: ['Akü değiştirildi', 'Şarj soketi temizlendi'] },
+  { kod: 'RT-AKU', tip: 'reach_truck', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.0012, mttr: 45, uzmanlik: 'aku', onem: 'orta',
+    islemler: ['Akü soketi değiştirildi', 'Akü kablosu yenilendi'] },
   { kod: 'RT-MAS', tip: 'reach_truck', ad: 'Direk zinciri / kaldırma sorunu', kayip: 'ariza', oran: 0.005, mttr: 120, asinma: 2.5, uzmanlik: 'mekanik', onem: 'yuksek',
     islemler: ['Direk zinciri gerildi ve yağlandı', 'Zincir makarası değiştirildi'] },
   { kod: 'RT-SNS', tip: 'reach_truck', ad: 'Yükseklik sensörü hatası', kayip: 'kucuk_durus', oran: 0.010, mttr: 25, uzmanlik: 'elektrik', onem: 'orta',
