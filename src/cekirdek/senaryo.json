@@ -1,6 +1,6 @@
 {
   "_aciklama": "Sentetik veri üreticisinin ayarları. Kodu değiştirmeden desenler buradan ayarlanır. Değişiklik yeni üretilen günlere yansır; eski günleri yeniden üretmek için: node tools/uret.js --yeniden --gun 180",
-  "surum": "4",
+  "surum": "5",
   "tohum": "yildiz-ev-yasam",
   "yogunluk": 3,
   "yasCarpaniYil": 0.08,

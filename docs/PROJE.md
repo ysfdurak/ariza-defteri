@@ -94,6 +94,9 @@ RT-03 + RT-HID + cuma (1. ve 2. vardiya): ayrıca %65 olasılıkla 1 arıza
 Çözen: uzmanlık³ × (vardiyada 1 · vardiya dışı 0,5) ağırlıkla; izindeki seçilmez; uzmanlık < 0,5 ise süre × 2,2
 ```
 
+**Akü şarjı arıza değildir (surum 5, 26.11.2026):** surum 4'e kadar forkliftte ve reach truckta en sık "arıza" türü "akü şarjı bitti" idi (forklift başına yılda ~96). Şarjın bitmesi şarj planının işidir, ekipman bozulmamıştır; arıza kaydına girerse Pareto'nun tepesine yerleşir ve asıl bozulmaları gizler. Bu yüzden çıkarıldı. `FL-AKU` ve `RT-AKU` kodları kaldı ama artık yalnız gerçek arızayı anlatıyor: **akü soketi ya da kablosu hasarlı** (oran 0,0015 ve 0,0012; teknisyen gerekir, MTTR 45 dk). Sonuç: forklift başına yılda ~163 kayıt (63'ü arıza).
+- **Şöyle daha iyi olur:** Sahada bakım ekibi gerektiren forklift arızası ayda birkaç tanedir. Burada hidrolik kaçak tek başına yılda 32. Yoğunluğu düşürmek veriyi gerçekçi yapar, ama analizin aşınmayı görebilmesi için gereken arıza sayısı da azalır. Karar bekliyor.
+
 **Kullanım (V3, surum 4):** Ekipman her vardiyanın tamamında çalışmaz; kullanılan süre sezona, haftanın gününe ve vardiyaya göre değişir (`kullanimDk`). Arıza olasılığı kullanılan süreyle orantılıdır ve aşınma, bakımdan beri geçen güne değil bakımdan beri çalışılan süreye göre ilerler (sayaç).
 - **İçeride ne oluyor:** Forkliftte 30 günlük bakım periyodu ortalama 447 çalışma saati eder. Ama mayısta 30 gün ~383 saat, aralıkta ~536 saat (%40 fark). Takvime göre bakım, yoğun dönemde ekipmanı daha "yaşlı" yakalar.
 - **API:** `bakimDurumu` artık `bakimdanBeriSaat` (sayaç) ve `periyotSaat` (bir takvim periyodunun ortalama çalışması) döndürür; `/v1/ozet` ve `/v1/ekipman` ekipman satırında görünür. Nabız'ın Bakım ekranı bunu gösterir.
@@ -198,6 +201,7 @@ Panodaki "Dikkat çekenler"de KV-02 pazartesi bulgusu çıkmalı (90 günde yakl
 
 | Tarih | Değişiklik |
 | --- | --- |
+| 26.11.2026 | surum 5: akü şarjının bitmesi arıza sayılmıyor; FL-AKU/RT-AKU artık "akü soketi / kablosu hasarlı" (seyrek, teknisyen). Veri açılışta yeniden üretilir. 23 test. |
 | 26.11.2026 | V3 (surum 4): kullanım. Vardiyada kullanılan süre sezon, gün ve vardiyaya göre değişir; arıza olasılığı kullanımla orantılı, aşınma bakımdan beri çalışılan süreyle ilerler. Bakım durumuna sayaç (`bakimdanBeriSaat`, `periyotSaat`). Planlı süre = kullanım. 23 test (kullanım deseni eklendi; aşınma testi çalışma saatine göre). |
 | 25.11.2026 | Ortak ölçüm ve geri bildirim (olcum.ysfdurak.com), yalnız ariza.ysfdurak.com'da; tek ekran "pano". Pano dakikada bir kendini yenilediği için süre yalnız sekme görünür ve kişi son 60 sn'de etkileşimdeyken sayılır: duvar ekranında açık kalan sekme süreyi şişirmez. CSP yalnız bu adres için genişletildi. Kurum kurulumunda betik yüklenmez. |
 | 24.11.2026 | V2 için: türlere gizli aşınma β'sı (eski "gecikmede ×1,8 / bakım sonrası ×0,7" yerine sürekli Weibull yoğunluğu), vardiya üretimi ve `/v1/uretim` + MCP `vardiya_uretimi`, varsayılan geçmiş 360 gün (Nabız Analiz en az 180 ister), üretici sürümü değişince otomatik yeniden üretim, RT-03 cuma olasılığı %55 → %65 (aşınmayla birlikte deseni korumak için), sayfaya meta CSP. Bu turda fark edilen: güvenlik taraması `git ls-files` okuyor; dosyalar eklenmemiş yeni depoda boş tarayıp "temiz" demişti. Dosyalar eklenip yeniden tarandı, CSP bulgusu düzeltildi. |
