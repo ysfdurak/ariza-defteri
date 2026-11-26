@@ -31,6 +31,7 @@ const kullanimBellek = new Map();
  */
 export function kullanimDk(ekipman, gun, vardiya, senaryo = varsayilanSenaryo) {
   if (!TIPLER[ekipman.tip].vardiyalar.includes(vardiya)) return 0;
+  if (gun < ekipman.devreye) return 0; // henüz alınmamış ekipman çalışmaz (3 yıllık geçmiş, surum 6)
   const a = `${senaryo.tohum}|${senaryo.surum}|${ekipman.kod}|${gun}|${vardiya}`;
   let v = kullanimBellek.get(a);
   if (v == null) {
@@ -185,6 +186,7 @@ export function gunuUret(gun, senaryo = varsayilanSenaryo) {
 
   // Planlı bakımlar: bakım günü gelen ekipman 1. vardiyada bakıma alınır.
   for (const e of EKIPMANLAR) {
+    if (gun < e.devreye) continue;
     const b = bakimDurumu(e, gun, senaryo);
     if (!b.bugunBakim) continue;
     const { kisi, beklemeDk } = cozenSec(r, e.tip === 'sorter' ? 'sorter' : 'mekanik', 1, gun, senaryo);
@@ -259,7 +261,7 @@ export function vardiyaUretimi(gun, kayitlar, senaryo = varsayilanSenaryo) {
   for (const v of VARDIYALAR) {
     for (const e of EKIPMANLAR) {
       const tip = TIPLER[e.tip];
-      if (!tip.vardiyalar.includes(v.no)) continue;
+      if (!tip.vardiyalar.includes(v.no) || gun < e.devreye) continue;
       const bu = kayitlar.filter((k) => k.ekipman === e.kod && k.vardiya === v.no);
       const planliBakimDk = bu.filter((k) => k.kayip === 'planli').reduce((t, k) => t + k.sure_dk, 0);
       // Planlı üretim süresi = ekipmanın o vardiyada kullanıldığı süre (boşta beklediği süre OEE'ye girmez)

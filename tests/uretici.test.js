@@ -6,11 +6,17 @@ import { EKIPMANLAR, KISILER, turBul } from '../src/cekirdek/katalog.js';
 import { gunEkle, haftaGunu, anMs } from '../src/cekirdek/zaman.js';
 
 const yil = (bas, n = 365) => Array.from({ length: n }, (_, i) => gunEkle(bas, i));
-const KAYITLAR = yil('2025-11-25').flatMap((g) => gunuUret(g));
+// Desen testleri üreticinin mantığını (aşınma, kullanım, izin, RT-03) denetler. Gerçek sıklıkta (surum 6) bir yılda bu
+// desenleri ayırt edecek kadar olay yok; bu yüzden aynı mantık 15 kat yoğunlukla üretilir. Gerçekçilik ayrıca,
+// varsayılan senaryoyla denetlenir ('gerçek sıklık' testi).
+const YOGUN = { ...varsayilanSenaryo, yogunluk: 15 };
+const KAYITLAR = yil('2025-11-25').flatMap((g) => gunuUret(g, YOGUN));
+const GERCEK = yil('2025-11-25').flatMap((g) => gunuUret(g));
 
 test('aynı gün iki kez üretilince aynı kayıtlar çıkar; tohum değişince değişir', () => {
-  assert.deepEqual(gunuUret('2026-11-24'), gunuUret('2026-11-24'));
-  assert.notDeepEqual(gunuUret('2026-11-24'), gunuUret('2026-11-24', { ...varsayilanSenaryo, tohum: 'baska' }));
+  const hafta = (sen) => yil('2026-11-18', 7).flatMap((g) => gunuUret(g, sen));
+  assert.deepEqual(hafta(varsayilanSenaryo), hafta(varsayilanSenaryo));
+  assert.notDeepEqual(hafta(varsayilanSenaryo), hafta({ ...varsayilanSenaryo, tohum: 'baska' }));
 });
 
 test('kayıtlar tutarlı: kimlik biçimi, gün içinde, bilinen kodlar, süre = bitiş - başlangıç', () => {
@@ -24,8 +30,19 @@ test('kayıtlar tutarlı: kimlik biçimi, gün içinde, bilinen kodlar, süre = 
     assert.ok(turBul(k.tur), k.tur);
     assert.ok(KISILER.some((p) => p.kod === k.cozen) && KISILER.some((p) => p.kod === k.bildiren));
   }
-  const gunluk = KAYITLAR.length / 365;
-  assert.ok(gunluk > 8 && gunluk < 20, `gün başı ${gunluk}`);
+});
+
+test('gerçek sıklık (surum 6): kayda giren olay sahadaki düzeyde', () => {
+  // Hedefler katalogdaki tür başına "yılda ~N / ekipman" yorumları. Forklift: yılda ~9 kayıt, ~4'ü teknisyen gerektiren arıza.
+  const say = (on, f = () => true) => GERCEK.filter((k) => k.ekipman.startsWith(on) && k.kayip !== 'planli' && f(k)).length;
+  const fl = say('FL') / 8, flAriza = say('FL', (k) => k.kayip === 'ariza') / 8;
+  assert.ok(fl >= 5 && fl <= 15, `forklift başına yılda ${fl}`);
+  assert.ok(flAriza >= 2 && flAriza <= 7, `forklift başına yılda teknisyen arızası ${flAriza}`);
+  const kv = say('KV') / 3;
+  assert.ok(kv >= 20 && kv <= 50, `konveyör hattı başına yılda ${kv}`);
+  assert.ok(!GERCEK.some((k) => /şarj/i.test(turBul(k.tur).ad)), 'akü şarjı arıza değildir');
+  const gunluk = GERCEK.length / 365;
+  assert.ok(gunluk > 0.8 && gunluk < 3, `gün başı ${gunluk}`);
 });
 
 test('desen: RT-03 hidrolik arızaları cuma günü yığılır', () => {

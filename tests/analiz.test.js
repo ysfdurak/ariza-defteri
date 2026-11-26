@@ -38,9 +38,9 @@ test('binom kuyruğu', () => {
   assert.ok(Math.abs(binomKuyruk(2, 3, 0.5) - 0.5) < 1e-12);
 });
 
-test('90 günlük veride bulgular yalnız tasarlanan desenleri bulur', () => {
+test('180 günlük veride bulgular yalnız tasarlanan desenleri bulur', () => {
   for (const bitis of ['2026-11-24', '2026-06-30', '2026-03-15']) {
-    const kayitlar = Array.from({ length: 90 }, (_, i) => gunEkle(bitis, -i)).flatMap((g) => gunuUret(g));
+    const kayitlar = Array.from({ length: 180 }, (_, i) => gunEkle(bitis, -i)).flatMap((g) => gunuUret(g));
     const b = bulgular(kayitlar, bitis);
     const tekrar = b.filter((x) => x.tur === 'tekrarlayan_gun');
     assert.deepEqual(tekrar.map((x) => `${x.ekipman}|${x.arizaTuru}|${x.haftaGunu}`), ['RT-03|RT-HID|5'], `${bitis}: ${tekrar.map((x) => x.metin).join(' / ')}`);

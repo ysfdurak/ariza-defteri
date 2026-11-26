@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { KuralHatasi } from './servis.js';
 
 const OKUMA = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
-const gun = (varsayilan) => z.number().int().min(1).max(365).optional().describe(`Kaç günlük dönem (bugün dahil). Varsayılan ${varsayilan}.`);
+const gun = (varsayilan) => z.number().int().min(1).max(1100).optional().describe(`Kaç günlük dönem (bugün dahil). Varsayılan ${varsayilan}.`);
 
 export const MCP_ARAC_ADLARI = ['durum', 'ana_veriler', 'arizalari_listele', 'ekipman_ozeti', 'ekipman_detayi', 'pareto', 'kim_cozuyor', 'bulgular', 'vardiya_uretimi'];
 
@@ -41,12 +41,12 @@ export function createMcpHandler({ servis, log = () => {} }) {
       tip: z.enum(['forklift', 'reach_truck', 'konveyor', 'sorter', 'strec']).optional().describe('Yalnız bu ekipman tipi.'),
       ekipman: z.string().max(10).optional().describe('Yalnız bu ekipman.'),
     }, (a) => { const o = servis.ozet({ gun: a.gun, tip: a.tip, ekipman: a.ekipman }); return { donemGun: o.donemGun, pareto: o.pareto, kayiplar: o.kayiplar }; }],
-    ['kim_cozuyor', 'Ekipman tipi başına arızaları hangi teknisyenin çözdüğü, payı ve ortalama süresi; tek kişiye bağımlılık riski.', { gun: gun(90) },
+    ['kim_cozuyor', 'Ekipman tipi başına arızaları hangi teknisyenin çözdüğü, payı ve ortalama süresi; tek kişiye bağımlılık riski.', { gun: gun(180) },
       (a) => servis.cozenler({ gun: a.gun })],
     ['vardiya_uretimi', 'Biten vardiyalar için ekipman başına planlı süre, duruş, iş adedi, hatalı adet ve tipin ideal hızı (OEE girdisi).', {
       gun: gun(7), ekipman: z.string().max(10).optional().describe('Ekipman kodu, ör. SR-01.'),
     }, (a) => servis.uretim({ gun: a.gun, ekipman: a.ekipman })],
-    ['bulgular', 'Veriden çıkan kural tabanlı bulgular: belli bir günde tekrarlayan arıza, tek kişiye bağımlılık, geciken bakım.', { gun: gun(90) },
+    ['bulgular', 'Veriden çıkan kural tabanlı bulgular: belli bir günde tekrarlayan arıza, tek kişiye bağımlılık, geciken bakım.', { gun: gun(180) },
       (a) => servis.bulgular({ gun: a.gun })],
   ];
 

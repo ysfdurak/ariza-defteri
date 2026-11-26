@@ -40,7 +40,7 @@ export function loadConfig(env = process.env) {
     webDir: join(kok, 'web'),
     // Gerçek veriyle kurum içi kullanımda SENTETIK=false: üretici hiç çalışmaz, yalnız gerçek kayıtlar tutulur.
     sentetik: env.SENTETIK !== 'false',
-    gecmisGun: sayi(env.GECMIS_GUN, 360, 0, 360),
+    gecmisGun: sayi(env.GECMIS_GUN, 1095, 0, 1095), // güvenilirlik analizi gerçek sıklıkta birkaç yıl ister
     // Okuma API'si herkese açık (veri sentetik); ziyaretçi başına dakikada bu kadar istek.
     dakikalikIstek: sayi(env.DAKIKALIK_ISTEK, 60, 5, 1000),
     yazmaAnahtarlari,

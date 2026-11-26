@@ -67,57 +67,81 @@ export const EKIPMANLAR = [
 export const ARIZA_TURLERI = [
   // Akü şarjının bitmesi arıza değildir (şarj planı işidir, kayda girmez; surum 5). Burada yalnız soketin ya da kablonun
   // gerçekten hasar görmesi var: seyrek, teknisyen gerekir.
-  { kod: 'FL-AKU', tip: 'forklift', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.0015, mttr: 45, uzmanlik: 'aku', onem: 'orta',
+  // FL-AKU: yılda ~0,3 / ekipman (soket/kablo hasarı; birkaç yılda bir)
+  { kod: 'FL-AKU', tip: 'forklift', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.00031, mttr: 45, uzmanlik: 'aku', onem: 'orta',
     islemler: ['Akü soketi değiştirildi', 'Akü kablosu ve pabucu yenilendi'] },
-  { kod: 'FL-HID', tip: 'forklift', ad: 'Hidrolik kaçak', kayip: 'ariza', oran: 0.009, mttr: 75, asinma: 1.6, uzmanlik: 'hidrolik', onem: 'yuksek',
+  // FL-HID: yılda ~2 / ekipman (silindir/hortum kaçağı; ağır kullanımda yılda 1-3)
+  { kod: 'FL-HID', tip: 'forklift', ad: 'Hidrolik kaçak', kayip: 'ariza', oran: 0.0017, mttr: 75, asinma: 1.6, uzmanlik: 'hidrolik', onem: 'yuksek',
     islemler: ['Hidrolik hortum değiştirildi', 'Rakor sıkıldı, yağ tamamlandı', 'Silindir contası değiştirildi'] },
-  { kod: 'FL-LAS', tip: 'forklift', ad: 'Lastik hasarı', kayip: 'ariza', oran: 0.006, mttr: 60, asinma: 1.8, uzmanlik: 'mekanik', onem: 'orta',
+  // FL-LAS: yılda ~1,5 / ekipman (dolgu lastik kesik/parça kopması; aşınma değişimi planlı bakımda)
+  { kod: 'FL-LAS', tip: 'forklift', ad: 'Lastik hasarı', kayip: 'ariza', oran: 0.001, mttr: 60, asinma: 1.8, uzmanlik: 'mekanik', onem: 'orta',
     islemler: ['Lastik değiştirildi', 'Jant somunları sıkıldı, lastik kontrol edildi'] },
-  { kod: 'FL-FRN', tip: 'forklift', ad: 'Fren ayarı bozuk', kayip: 'ayar', oran: 0.005, mttr: 35, asinma: 1.4, uzmanlik: 'mekanik', onem: 'yuksek',
+  // FL-FRN: yılda ~1 / ekipman (fren ayarı kayması; periyodik bakımda düzeltilir)
+  { kod: 'FL-FRN', tip: 'forklift', ad: 'Fren ayarı bozuk', kayip: 'ayar', oran: 0.00076, mttr: 35, asinma: 1.4, uzmanlik: 'mekanik', onem: 'yuksek',
     islemler: ['Fren balatası ayarlandı', 'Fren hidroliği havası alındı'] },
-  { kod: 'FL-SNS', tip: 'forklift', ad: 'Uyarı ışığı / sensör hatası', kayip: 'kucuk_durus', oran: 0.012, mttr: 20, uzmanlik: 'elektrik', onem: 'dusuk',
+  // FL-SNS: yılda ~2 / ekipman (ikaz ışığı, hata kodu; çoğu sıfırlama ya da konnektör)
+  { kod: 'FL-SNS', tip: 'forklift', ad: 'Uyarı ışığı / sensör hatası', kayip: 'kucuk_durus', oran: 0.0014, mttr: 20, uzmanlik: 'elektrik', onem: 'dusuk',
     islemler: ['Sensör temizlendi', 'Hata kodu silindi, test edildi', 'Sensör kablosu değiştirildi'] },
-  { kod: 'FL-CAT', tip: 'forklift', ad: 'Çatal hasarı / yükte hasar', kayip: 'kalite', oran: 0.004, mttr: 45, uzmanlik: 'mekanik', onem: 'orta',
+  // FL-CAT: yılda ~1 / ekipman (çatal eğilmesi, yük çarpması)
+  { kod: 'FL-CAT', tip: 'forklift', ad: 'Çatal hasarı / yükte hasar', kayip: 'kalite', oran: 0.00072, mttr: 45, uzmanlik: 'mekanik', onem: 'orta',
     islemler: ['Çatal değiştirildi', 'Çatal ayarı yapıldı, hasarlı palet ayrıldı'] },
 
-  { kod: 'RT-HID', tip: 'reach_truck', ad: 'Hidrolik kaçak / basınç düşük', kayip: 'ariza', oran: 0.010, mttr: 90, asinma: 1.5, uzmanlik: 'hidrolik', onem: 'yuksek',
+  // RT-HID: yılda ~2 / ekipman (RT-03'ün cuma deseni hariç)
+  { kod: 'RT-HID', tip: 'reach_truck', ad: 'Hidrolik kaçak / basınç düşük', kayip: 'ariza', oran: 0.0014, mttr: 90, asinma: 1.5, uzmanlik: 'hidrolik', onem: 'yuksek',
     islemler: ['Hidrolik pompa contası değiştirildi', 'Hidrolik hortum değiştirildi', 'Basınç valfi ayarlandı'] },
-  { kod: 'RT-AKU', tip: 'reach_truck', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.0012, mttr: 45, uzmanlik: 'aku', onem: 'orta',
+  // RT-AKU: yılda ~0,3 / ekipman (soket/kablo hasarı)
+  { kod: 'RT-AKU', tip: 'reach_truck', ad: 'Akü soketi / kablosu hasarlı', kayip: 'ariza', oran: 0.0002, mttr: 45, uzmanlik: 'aku', onem: 'orta',
     islemler: ['Akü soketi değiştirildi', 'Akü kablosu yenilendi'] },
-  { kod: 'RT-MAS', tip: 'reach_truck', ad: 'Direk zinciri / kaldırma sorunu', kayip: 'ariza', oran: 0.005, mttr: 120, asinma: 2.5, uzmanlik: 'mekanik', onem: 'yuksek',
+  // RT-MAS: yılda ~1 / ekipman (direk zinciri uzaması, makara)
+  { kod: 'RT-MAS', tip: 'reach_truck', ad: 'Direk zinciri / kaldırma sorunu', kayip: 'ariza', oran: 0.00068, mttr: 120, asinma: 2.5, uzmanlik: 'mekanik', onem: 'yuksek',
     islemler: ['Direk zinciri gerildi ve yağlandı', 'Zincir makarası değiştirildi'] },
-  { kod: 'RT-SNS', tip: 'reach_truck', ad: 'Yükseklik sensörü hatası', kayip: 'kucuk_durus', oran: 0.010, mttr: 25, uzmanlik: 'elektrik', onem: 'orta',
+  // RT-SNS: yılda ~2 / ekipman (yükseklik sensörü kirlenmesi/kalibrasyon)
+  { kod: 'RT-SNS', tip: 'reach_truck', ad: 'Yükseklik sensörü hatası', kayip: 'kucuk_durus', oran: 0.0013, mttr: 25, uzmanlik: 'elektrik', onem: 'orta',
     islemler: ['Sensör temizlendi ve kalibre edildi', 'Sensör değiştirildi'] },
-  { kod: 'RT-AYR', tip: 'reach_truck', ad: 'Kaldırma yüksekliği ayarı', kayip: 'ayar', oran: 0.004, mttr: 30, asinma: 0.7, uzmanlik: 'elektrik', onem: 'dusuk',
+  // RT-AYR: yılda ~1,5 / ekipman (kaldırma yüksekliği ayarı)
+  { kod: 'RT-AYR', tip: 'reach_truck', ad: 'Kaldırma yüksekliği ayarı', kayip: 'ayar', oran: 0.0012, mttr: 30, asinma: 0.7, uzmanlik: 'elektrik', onem: 'dusuk',
     islemler: ['Yükseklik limitleri yeniden ayarlandı'] },
 
-  { kod: 'KV-BNT', tip: 'konveyor', ad: 'Bant kayması', kayip: 'kucuk_durus', oran: 0.020, mttr: 20, uzmanlik: 'mekanik', onem: 'dusuk',
+  // KV-BNT: yılda ~6 / ekipman (bant kayması; ayda ~bir ayar)
+  { kod: 'KV-BNT', tip: 'konveyor', ad: 'Bant kayması', kayip: 'kucuk_durus', oran: 0.004, mttr: 20, uzmanlik: 'mekanik', onem: 'dusuk',
     islemler: ['Bant gerginliği ayarlandı', 'Bant hizalandı'] },
-  { kod: 'KV-SIK', operator: true, tip: 'konveyor', ad: 'Koli sıkışması', kayip: 'kucuk_durus', oran: 0.035, mttr: 8, uzmanlik: 'mekanik', onem: 'dusuk',
+  // KV-SIK: yılda ~24 / ekipman (yalnız 5 dk'yı geçen ve kayda giren sıkışma; ayda ~2)
+  { kod: 'KV-SIK', operator: true, tip: 'konveyor', ad: 'Koli sıkışması', kayip: 'kucuk_durus', oran: 0.017, mttr: 8, uzmanlik: 'mekanik', onem: 'dusuk',
     islemler: ['Sıkışan koli alındı, hat yeniden başlatıldı'] },
-  { kod: 'KV-FTS', tip: 'konveyor', ad: 'Fotosel arızası', kayip: 'kucuk_durus', oran: 0.010, mttr: 25, uzmanlik: 'elektrik', onem: 'orta',
+  // KV-FTS: yılda ~3 / ekipman (fotosel kirlenmesi/kayması)
+  { kod: 'KV-FTS', tip: 'konveyor', ad: 'Fotosel arızası', kayip: 'kucuk_durus', oran: 0.0023, mttr: 25, uzmanlik: 'elektrik', onem: 'orta',
     islemler: ['Fotosel temizlendi', 'Fotosel değiştirildi', 'Fotosel hizalandı'] },
-  { kod: 'KV-MTR', tip: 'konveyor', ad: 'Motor / redüktör arızası', kayip: 'ariza', oran: 0.003, mttr: 150, asinma: 2.2, uzmanlik: 'elektrik', onem: 'yuksek',
+  // KV-MTR: yılda ~0,5 / ekipman (motor/redüktör; birkaç yılda bir)
+  { kod: 'KV-MTR', tip: 'konveyor', ad: 'Motor / redüktör arızası', kayip: 'ariza', oran: 0.00036, mttr: 150, asinma: 2.2, uzmanlik: 'elektrik', onem: 'yuksek',
     islemler: ['Motor değiştirildi', 'Redüktör yağı değiştirildi, rulman yenilendi'] },
-  { kod: 'KV-HIZ', tip: 'konveyor', ad: 'Hat yavaş çalışıyor', kayip: 'hiz', oran: 0.008, mttr: 40, uzmanlik: 'elektrik', onem: 'orta',
+  // KV-HIZ: yılda ~2 / ekipman (frekans sürücüsü/ayar kaynaklı yavaşlık)
+  { kod: 'KV-HIZ', tip: 'konveyor', ad: 'Hat yavaş çalışıyor', kayip: 'hiz', oran: 0.0016, mttr: 40, uzmanlik: 'elektrik', onem: 'orta',
     islemler: ['Sürücü (inverter) ayarı düzeltildi', 'Makaralar yağlandı'] },
 
-  { kod: 'SR-OKU', tip: 'sorter', ad: 'Barkod okuyucu hatası (yanlış oluk)', kayip: 'kalite', oran: 0.030, mttr: 25, uzmanlik: 'sorter', onem: 'orta',
+  // SR-OKU: yılda ~12 / ekipman (okuyucu kirlenmesi, yanlış oluk; ayda ~1)
+  { kod: 'SR-OKU', tip: 'sorter', ad: 'Barkod okuyucu hatası (yanlış oluk)', kayip: 'kalite', oran: 0.014, mttr: 25, uzmanlik: 'sorter', onem: 'orta',
     islemler: ['Okuyucu camı temizlendi', 'Okuyucu yeniden kalibre edildi', 'Okuyucu değiştirildi'] },
-  { kod: 'SR-SIK', operator: true, tip: 'sorter', ad: 'Sıkışma', kayip: 'kucuk_durus', oran: 0.040, mttr: 12, uzmanlik: 'sorter', onem: 'dusuk',
+  // SR-SIK: yılda ~24 / ekipman (kayda giren sıkışma; ayda ~2)
+  { kod: 'SR-SIK', operator: true, tip: 'sorter', ad: 'Sıkışma', kayip: 'kucuk_durus', oran: 0.027, mttr: 12, uzmanlik: 'sorter', onem: 'dusuk',
     islemler: ['Sıkışma giderildi, hat yeniden başlatıldı'] },
-  { kod: 'SR-TRY', tip: 'sorter', ad: 'Tray / klape arızası', kayip: 'ariza', oran: 0.012, mttr: 70, asinma: 2.0, uzmanlik: 'sorter', onem: 'yuksek',
+  // SR-TRY: yılda ~24 / ekipman (tray/klape; sorterde yüzlerce tray var, ayda ~2)
+  { kod: 'SR-TRY', tip: 'sorter', ad: 'Tray / klape arızası', kayip: 'ariza', oran: 0.02, mttr: 70, asinma: 2.0, uzmanlik: 'sorter', onem: 'yuksek',
     islemler: ['Klape motoru değiştirildi', 'Tray mekanizması ayarlandı'] },
-  { kod: 'SR-PLC', tip: 'sorter', ad: 'PLC / yazılım hatası', kayip: 'ariza', oran: 0.006, mttr: 90, uzmanlik: 'sorter', onem: 'yuksek',
+  // SR-PLC: yılda ~1 / ekipman (PLC/yazılım hatası)
+  { kod: 'SR-PLC', tip: 'sorter', ad: 'PLC / yazılım hatası', kayip: 'ariza', oran: 0.0018, mttr: 90, uzmanlik: 'sorter', onem: 'yuksek',
     islemler: ['PLC yeniden başlatıldı, parametreler kontrol edildi', 'Yazılım yaması yüklendi'] },
-  { kod: 'SR-ACL', tip: 'sorter', ad: 'Açılışta ısınma / test turu uzun sürdü', kayip: 'baslangic', oran: 0.025, mttr: 20, uzmanlik: 'sorter', onem: 'dusuk',
+  // SR-ACL: yılda ~6 / ekipman (uzun süren açılış testi)
+  { kod: 'SR-ACL', tip: 'sorter', ad: 'Açılışta ısınma / test turu uzun sürdü', kayip: 'baslangic', oran: 0.015, mttr: 20, uzmanlik: 'sorter', onem: 'dusuk',
     islemler: ['Açılış testi tamamlandı', 'Isınma programı tekrar çalıştırıldı'] },
 
-  { kod: 'ST-FLM', operator: true, tip: 'strec', ad: 'Film kopması', kayip: 'kucuk_durus', oran: 0.030, mttr: 6, uzmanlik: 'mekanik', onem: 'dusuk',
+  // ST-FLM: yılda ~12 / ekipman (kayda giren film kopması; ayda ~1)
+  { kod: 'ST-FLM', operator: true, tip: 'strec', ad: 'Film kopması', kayip: 'kucuk_durus', oran: 0.014, mttr: 6, uzmanlik: 'mekanik', onem: 'dusuk',
     islemler: ['Film yeniden takıldı'] },
-  { kod: 'ST-AYR', tip: 'strec', ad: 'Gerginlik ayarı bozuk', kayip: 'ayar', oran: 0.010, mttr: 20, asinma: 0.6, uzmanlik: 'mekanik', onem: 'dusuk',
+  // ST-AYR: yılda ~3 / ekipman (gerginlik ayarı)
+  { kod: 'ST-AYR', tip: 'strec', ad: 'Gerginlik ayarı bozuk', kayip: 'ayar', oran: 0.0045, mttr: 20, asinma: 0.6, uzmanlik: 'mekanik', onem: 'dusuk',
     islemler: ['Ön gerdirme ayarlandı'] },
-  { kod: 'ST-MTR', tip: 'strec', ad: 'Döner tabla motoru arızası', kayip: 'ariza', oran: 0.003, mttr: 110, asinma: 2.0, uzmanlik: 'elektrik', onem: 'orta',
+  // ST-MTR: yılda ~0,5 / ekipman (döner tabla motoru; birkaç yılda bir)
+  { kod: 'ST-MTR', tip: 'strec', ad: 'Döner tabla motoru arızası', kayip: 'ariza', oran: 0.00042, mttr: 110, asinma: 2.0, uzmanlik: 'elektrik', onem: 'orta',
     islemler: ['Motor kömürleri değiştirildi', 'Motor değiştirildi'] },
 ];
 
