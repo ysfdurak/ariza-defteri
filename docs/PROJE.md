@@ -85,19 +85,26 @@ API'ye 25 Kasım 10:20'de sorulur:
 **Desenler nasıl veriye giriyor?** Bir arızanın beklenen sayısı (Poisson ortalaması) şu çarpımla bulunur:
 
 ```
-ortalama = tür.oran × yoğunluk(3) × yaş(1 + 0,08 × yıl) × aşınma(x) × sezon(kasım 1,35 · aralık 1,25 …)
-         × gün(pazar 0,5 · cumartesi 0,85) × gece(0,6) × otonom bakım(forklift, 1 Eylül 2026'dan sonra 0,7)
-aşınma(x) = β · x^(β−1)    x = (bakımdan sonra geçen gün + 0,5) / bakım periyodu; β türün gizli "asinma" değeri
-            (0 ≤ x ≤ 1 aralığında ortalaması 1: bakım gecikince x > 1 ve aşınan türde arıza hızla artar)
+kullanım(dk) = 480 × doluluk(0,75) × sezon(kasım 1,35 · aralık 1,25 …) × gün(pazar 0,5 · cumartesi 0,85) × gece(0,6) ± %10   (en çok 480)
+ortalama     = tür.oran × yoğunluk(3) × yaş(1 + 0,08 × yıl) × aşınma(x) × kullanım / (480 × 0,75)
+             × otonom bakım(forklift, 1 Eylül 2026'dan sonra 0,7)
+aşınma(x)    = β · x^(β−1)    x = bakımdan beri ÇALIŞILAN süre / bir periyodun ortalama çalışma süresi
+               β türün gizli "asinma" değeri (0 ≤ x ≤ 1 aralığında ortalaması 1: bakım gecikince x > 1, aşınan türde arıza hızla artar)
 RT-03 + RT-HID + cuma (1. ve 2. vardiya): ayrıca %65 olasılıkla 1 arıza
 Çözen: uzmanlık³ × (vardiyada 1 · vardiya dışı 0,5) ağırlıkla; izindeki seçilmez; uzmanlık < 0,5 ise süre × 2,2
 ```
 
+**Kullanım (V3, surum 4):** Ekipman her vardiyanın tamamında çalışmaz; kullanılan süre sezona, haftanın gününe ve vardiyaya göre değişir (`kullanimDk`). Arıza olasılığı kullanılan süreyle orantılıdır ve aşınma, bakımdan beri geçen güne değil bakımdan beri çalışılan süreye göre ilerler (sayaç).
+- **İçeride ne oluyor:** Forkliftte 30 günlük bakım periyodu ortalama 447 çalışma saati eder. Ama mayısta 30 gün ~383 saat, aralıkta ~536 saat (%40 fark). Takvime göre bakım, yoğun dönemde ekipmanı daha "yaşlı" yakalar.
+- **API:** `bakimDurumu` artık `bakimdanBeriSaat` (sayaç) ve `periyotSaat` (bir takvim periyodunun ortalama çalışması) döndürür; `/v1/ozet` ve `/v1/ekipman` ekipman satırında görünür. Nabız'ın Bakım ekranı bunu gösterir.
+- **Vardiya üretimi de değişti:** planlı süre = ekipmanın o vardiyada kullanıldığı süre (boşta beklediği süre OEE'ye girmez). Duruş, kullanılan süreyle sınırlıdır.
+- **Bu yapı uygun değil, şöyle uygulanır:** İlk sürümde sezon arıza oranını doğrudan çarpıyordu ("kasımda her şey daha çok bozulur"). Gerçekte ekipman kasımda daha çok çalıştığı için daha çok bozulur. Etkiyi doğru yere (kullanıma) koymak, takvim-sayaç karşılaştırmasını mümkün kıldı.
+
 **Gizli β (V2):** 10 türün aşınma davranışı var (ör. RT-MAS 2,5, ST-AYR 0,6). Değer API'den verilmez. Nabız Analiz onu kayıtlardan kör tahmin eder, kör deneme sonuçları onun dokümanında.
 
-**Vardiya üretimi (V2, OEE girdisi):** `vardiyaUretimi(gun, kayitlar)` her ekipman ve vardiya için şunları üretir: planlı süre (480 dk − planlı bakım), duruş (o vardiyada başlayan arızalar), iş adedi (ideal hız × çalışma × %68–88 performans; hız kaybı varsa ×0,85) ve hatalı adet (binde 4 + kalite arızası başına %1). `/v1/uretim` yalnız bitmiş vardiyaları gösterir. Nabız OEE'yi bundan hesaplar.
+**Vardiya üretimi (V2, OEE girdisi):** `vardiyaUretimi(gun, kayitlar)` her ekipman ve vardiya için şunları üretir: planlı süre (kullanım − planlı bakım; V3'ten önce 480 dk − planlı bakım), duruş (o vardiyada başlayan arızalar), iş adedi (ideal hız × çalışma × %68–88 performans; hız kaybı varsa ×0,85) ve hatalı adet (binde 4 + kalite arızası başına %1). `/v1/uretim` yalnız bitmiş vardiyaları gösterir. Nabız OEE'yi bundan hesaplar.
 
-**Sürüm:** `senaryo.json` → `surum` değişince saklanan günler yeni kurallarla kendiliğinden yeniden üretilir (gerçek kayıtlara dokunulmaz). V0 → 1, aşınma → 2, performans aralığı → 3.
+**Sürüm:** `senaryo.json` → `surum` değişince saklanan günler yeni kurallarla kendiliğinden yeniden üretilir (gerçek kayıtlara dokunulmaz). V0 → 1, aşınma → 2, performans aralığı → 3, kullanım ve sayaç → 4.
 
 ## 6. Sunucu ve yayın
 
@@ -191,6 +198,7 @@ Panodaki "Dikkat çekenler"de KV-02 pazartesi bulgusu çıkmalı (90 günde yakl
 
 | Tarih | Değişiklik |
 | --- | --- |
+| 26.11.2026 | V3 (surum 4): kullanım. Vardiyada kullanılan süre sezon, gün ve vardiyaya göre değişir; arıza olasılığı kullanımla orantılı, aşınma bakımdan beri çalışılan süreyle ilerler. Bakım durumuna sayaç (`bakimdanBeriSaat`, `periyotSaat`). Planlı süre = kullanım. 23 test (kullanım deseni eklendi; aşınma testi çalışma saatine göre). |
 | 25.11.2026 | Ortak ölçüm ve geri bildirim (olcum.ysfdurak.com), yalnız ariza.ysfdurak.com'da; tek ekran "pano". Pano dakikada bir kendini yenilediği için süre yalnız sekme görünür ve kişi son 60 sn'de etkileşimdeyken sayılır: duvar ekranında açık kalan sekme süreyi şişirmez. CSP yalnız bu adres için genişletildi. Kurum kurulumunda betik yüklenmez. |
 | 24.11.2026 | V2 için: türlere gizli aşınma β'sı (eski "gecikmede ×1,8 / bakım sonrası ×0,7" yerine sürekli Weibull yoğunluğu), vardiya üretimi ve `/v1/uretim` + MCP `vardiya_uretimi`, varsayılan geçmiş 360 gün (Nabız Analiz en az 180 ister), üretici sürümü değişince otomatik yeniden üretim, RT-03 cuma olasılığı %55 → %65 (aşınmayla birlikte deseni korumak için), sayfaya meta CSP. Bu turda fark edilen: güvenlik taraması `git ls-files` okuyor; dosyalar eklenmemiş yeni depoda boş tarayıp "temiz" demişti. Dosyalar eklenip yeniden tarandı, CSP bulgusu düzeltildi. |
 | 24.11.2026 | Nabız için: `/v1/ana-veriler` artık ekipman tiplerinin çalıştığı vardiyaları (`tipler`) ve vardiya saatlerini (`vardiyalar`) da veriyor. Nabız kontrol uyumunu buradan hesaplar. |

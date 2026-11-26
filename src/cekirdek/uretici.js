@@ -9,12 +9,70 @@
 // Desenler rastgele değil, kurallıdır (senaryo.json): yaşlanan ekipman daha sık bozulur, aşınan türler bakım
 // yaklaştıkça (ve bakım gecikince) sıklaşır, ayar türleri bakımdan hemen sonra bozulur, RT-03 cuma günleri hidrolik sorunu çıkarır, sorter'ı Murat Kaya bilir ve o izindeyken onarım uzar,
 // forkliftlerde otonom bakım başladıktan sonra büyük arızalar azalır, kasım-aralık yoğunluğu arızayı artırır.
+//
+// Kullanım (surum 4): ekipman her vardiyanın tamamında çalışmaz. Vardiyada kaç dakika kullanıldığı sezona, haftanın gününe
+// ve vardiyaya göre değişir (kullanimDk). Arıza olasılığı kullanılan süreyle orantılıdır ve aşınma, bakımdan beri geçen
+// GÜNE değil, bakımdan beri ÇALIŞILAN SÜREYE göre artar (kullanim sayacı). Bu yüzden kasım-aralıkta ekipman bakım
+// periyodunun aynı gününde daha "yaşlıdır": takvime göre bakım, yoğun dönemde geç kalır. Nabız V3 bunu gösterir.
 import { ARIZA_TURLERI, EKIPMANLAR, KISILER, PLANLI_BAKIM, TIPLER, VARDIYALAR, planliKod } from './katalog.js';
 import { ozet32, uretec } from './rastgele.js';
 import { anMs, ay, gunEkle, gunFarki, haftaGunu } from './zaman.js';
 import varsayilanSenaryo from './senaryo.json' with { type: 'json' };
 
 export { varsayilanSenaryo };
+
+const VARDIYA_DK = 480;
+const VARDIYA_SIRASI = [3, 1, 2]; // bir takvim gününde vardiyaların sırası (3. vardiya 00-08)
+const kullanimBellek = new Map();
+
+/**
+ * Ekipmanın o gün o vardiyada kaç dakika kullanıldığı (planlı üretim süresi). Vardiyada çalışmıyorsa 0.
+ * doluluk × sezon × haftanın günü × (gece) ± %10, en çok 480 dk. Saf ve bellekli: aynı girdi hep aynı sonuç.
+ */
+export function kullanimDk(ekipman, gun, vardiya, senaryo = varsayilanSenaryo) {
+  if (!TIPLER[ekipman.tip].vardiyalar.includes(vardiya)) return 0;
+  const a = `${senaryo.tohum}|${senaryo.surum}|${ekipman.kod}|${gun}|${vardiya}`;
+  let v = kullanimBellek.get(a);
+  if (v == null) {
+    if (kullanimBellek.size > 200_000) kullanimBellek.clear();
+    const k = senaryo.kullanim;
+    const oran = k.doluluk * (senaryo.sezon[String(ay(gun))] ?? 1) * (senaryo.gunCarpani[String(haftaGunu(gun))] ?? 1) * (vardiya === 3 ? senaryo.geceCarpani : 1);
+    const gurultu = 1 + (uretec(`${senaryo.tohum}:${ekipman.kod}:${gun}:${vardiya}:kullanim`).sayi() - 0.5) * 2 * k.oynama;
+    v = Math.round(Math.min(VARDIYA_DK, VARDIYA_DK * oran * gurultu));
+    kullanimBellek.set(a, v);
+  }
+  return v;
+}
+
+/** Bir tipin ortalama günlük kullanımı (dk): bir yıllık referans takvimin ortalaması. Aşınmada "bir periyot" ölçüsü. */
+const nominalBellek = new Map();
+export function nominalGunlukDk(ekipman, senaryo = varsayilanSenaryo) {
+  const a = `${senaryo.tohum}|${senaryo.surum}|${ekipman.kod}`;
+  if (!nominalBellek.has(a)) {
+    let t = 0;
+    for (let i = 0; i < 364; i++) { const g = gunEkle('2025-01-01', i); for (const v of VARDIYA_SIRASI) t += kullanimDk(ekipman, g, v, senaryo); }
+    nominalBellek.set(a, t / 364);
+  }
+  return nominalBellek.get(a);
+}
+
+/**
+ * Bakımdan beri çalışılan süre (dk), verilen vardiyanın ortasına kadar. Bakım günü bakım 9'da yapılır:
+ * o günün 3. vardiyası önceki döngüdedir, 1. vardiyanın bakımdan sonraki kısmı (~%85) ve 2. vardiya yeni döngüdedir.
+ */
+export function bakimdanBeriKullanimDk(ekipman, sonBakim, gun, vardiya, senaryo = varsayilanSenaryo) {
+  if (!sonBakim) return null;
+  let t = 0;
+  for (let d = sonBakim; d <= gun; d = gunEkle(d, 1)) {
+    for (const v of VARDIYA_SIRASI) {
+      if (d === sonBakim && v === 3) continue;
+      const k = kullanimDk(ekipman, d, v, senaryo) * (d === sonBakim && v === 1 ? 0.85 : 1);
+      if (d === gun && v === vardiya) return t + k / 2;
+      t += k;
+    }
+  }
+  return t;
+}
 
 /** Ekipmanın o güne göre bakım durumu: son bakım, sıradaki plan, gecikme. */
 export function bakimDurumu(ekipman, gun, senaryo = varsayilanSenaryo) {
@@ -27,6 +85,7 @@ export function bakimDurumu(ekipman, gun, senaryo = varsayilanSenaryo) {
     return r.sayi() < gecikmeOlasiligi ? r.tam(gecikmeGun[0], gecikmeGun[1]) : 0;
   };
   const yapilan = (k) => gunEkle(plan(k), gecikme(k));
+  const nominal = nominalGunlukDk(ekipman, senaryo);
 
   const fark = gunFarki(referans, gun) - ofset;
   const k = Math.floor(fark / periyot); // bu döngünün planı bugün ya da daha önce
@@ -45,6 +104,9 @@ export function bakimDurumu(ekipman, gun, senaryo = varsayilanSenaryo) {
     gecikmeGun: gecikmede ? gunFarki(plan(bekleyenK), gun) : 0,
     bugunBakim: kYapildi && yapilan(k) === gun,
     bakimdanBeriGun: sonBakim ? gunFarki(sonBakim, gun) : null,
+    // Sayaç: bakımdan beri çalışılan saat (günün sonuna kadar) ve bir periyodun ortalama çalışma saati
+    bakimdanBeriSaat: sonBakim ? Math.round(bakimdanBeriKullanimDk(ekipman, sonBakim, gun, 2, senaryo) / 60) : null,
+    periyotSaat: Math.round((periyot * nominal) / 60),
   };
 }
 
@@ -71,14 +133,15 @@ export function carpanlar(ekipman, gun, senaryo = varsayilanSenaryo) {
 }
 
 /**
- * Aşınma çarpanı: bakımdan sonra geçen sürenin (periyoda oranı x) Weibull yoğunluğu, ortalaması 1 olacak biçimde:
+ * Aşınma çarpanı: bakımdan sonra ÇALIŞILAN sürenin (bir periyodun ortalama çalışmasına oranı x) Weibull yoğunluğu, ortalaması 1 olacak biçimde:
  *   m(x) = β · x^(β-1)      (0 ≤ x ≤ 1 aralığında ortalaması tam 1'dir; bakım gecikirse x > 1 ve aşınan türde m büyür)
  * β > 1: bakım yaklaştıkça arıza artar (aşınma) · β < 1: bakımdan hemen sonra yüksek (erken dönem) · β tanımsız: 1 (rastgele).
  * Planlı bakım sayacı sıfırlar; arıza onarımı sıfırlamaz ("minimal onarım": ekipman bakımdan önceki yaşına döner).
  */
 export function asinmaCarpani(tur, bakim, senaryo = varsayilanSenaryo) {
   if (!tur.asinma || bakim.bakimdanBeriGun == null) return 1;
-  const x = (bakim.bakimdanBeriGun + 0.5) / bakim.periyotGun;
+  // x: döngüdeki konum. Varsa çalışma sayacı (bakımdan beri çalışılan dk / bir periyodun ortalama çalışması), yoksa gün.
+  const x = bakim.kullanimX ?? (bakim.bakimdanBeriGun + 0.5) / bakim.periyotGun;
   const [alt, ust] = senaryo.asinmaSinir;
   return Math.min(ust, Math.max(alt, tur.asinma * x ** (tur.asinma - 1)));
 }
@@ -143,13 +206,18 @@ export function gunuUret(gun, senaryo = varsayilanSenaryo) {
         const once = bakimDurumu(e, gunEkle(gun, -1), senaryo);
         c.bakimDurumu = { ...once, bakimdanBeriGun: once.bakimdanBeriGun == null ? null : once.bakimdanBeriGun + 1 };
       }
-      const vardiyaCarpani = v.no === 3 ? senaryo.geceCarpani : 1;
+      // Kullanım: arıza olasılığı çalışılan süreyle orantılı (sezon, hafta günü ve gece artık kullanım üzerinden etkiler)
+      const kDk = kullanimDk(e, gun, v.no, senaryo);
+      if (!kDk) continue;
+      const kullanimCarpani = kDk / (VARDIYA_DK * senaryo.kullanim.doluluk);
+      const sb = c.bakimDurumu.sonBakim;
+      c.bakimDurumu = { ...c.bakimDurumu, kullanimX: sb ? bakimdanBeriKullanimDk(e, sb, gun, v.no, senaryo) / (c.bakimDurumu.periyotGun * nominalGunlukDk(e, senaryo)) : null };
       const am = senaryo.otonomBakim.find((a) => a.tip === e.tip && gun >= a.baslangic);
 
       for (const t of ARIZA_TURLERI) {
         if (t.tip !== e.tip) continue;
         const amCarpani = !am ? 1 : t.kayip === 'ariza' ? am.arizaCarpani : t.kayip === 'kucuk_durus' ? am.kucukDurusCarpani : 1;
-        let ortalama = t.oran * senaryo.yogunluk * c.yas * asinmaCarpani(t, c.bakimDurumu, senaryo) * c.sezon * c.gun * vardiyaCarpani * amCarpani;
+        let ortalama = t.oran * senaryo.yogunluk * c.yas * asinmaCarpani(t, c.bakimDurumu, senaryo) * kullanimCarpani * amCarpani;
         // Sabah açılış kaybı yalnız günün ilk çalışan vardiyasında olur.
         if (t.kayip === 'baslangic' && v.no !== 1) ortalama = 0;
         let adet = r.poisson(ortalama);
@@ -162,7 +230,7 @@ export function gunuUret(gun, senaryo = varsayilanSenaryo) {
           const bildiren = r.sec(operatorler(v.no));
           // Basit duruşları (akü, sıkışma, film) operatör kendisi giderir; diğerlerine teknisyen gelir.
           const { kisi, carpan, beklemeDk } = t.operator ? { kisi: bildiren, carpan: 1, beklemeDk: 0 } : cozenSec(r, t.uzmanlik, v.no, gun, senaryo);
-          const bas = anMs(gun, v.basSaat, r.tam(0, (v.bitSaat - v.basSaat) * 60 - 20));
+          const bas = anMs(gun, v.basSaat, r.tam(0, Math.max(10, kDk - 20)));
           const sure = sureDk(r, t.mttr, carpan, beklemeDk);
           ekle({
             ekipman: e.kod, tur: t.kod, kayip: t.kayip, vardiya: v.no, baslangic: bas, bitis: bas + sure * 60_000, sure_dk: sure,
@@ -194,7 +262,8 @@ export function vardiyaUretimi(gun, kayitlar, senaryo = varsayilanSenaryo) {
       if (!tip.vardiyalar.includes(v.no)) continue;
       const bu = kayitlar.filter((k) => k.ekipman === e.kod && k.vardiya === v.no);
       const planliBakimDk = bu.filter((k) => k.kayip === 'planli').reduce((t, k) => t + k.sure_dk, 0);
-      const planliDk = Math.max(0, (v.bitSaat - v.basSaat) * 60 - planliBakimDk);
+      // Planlı üretim süresi = ekipmanın o vardiyada kullanıldığı süre (boşta beklediği süre OEE'ye girmez)
+      const planliDk = Math.max(0, kullanimDk(e, gun, v.no, senaryo) - planliBakimDk);
       const durusDk = Math.min(planliDk, bu.filter((k) => k.kayip !== 'planli').reduce((t, k) => t + k.sure_dk, 0));
       const hizKaybi = bu.filter((k) => k.kayip === 'hiz').length;
       const kaliteKaybi = bu.filter((k) => k.kayip === 'kalite').length;

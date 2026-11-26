@@ -34,7 +34,7 @@ Temel adres: `https://ariza.ysfdurak.com` (iç ağdan: `http://ariza-defteri:808
 | `GET /v1/arizalar` | `gun` (7) ya da `bas`/`bit` (YYYY-AA-GG), `ekipman`, `tur`, `kaynak`, `acik=1`, `limit` (200, en çok 2000) | `{ kayitlar: [...] }` yeniden eskiye |
 | `GET /v1/arizalar/{id}` | – | tek kayıt (saati gelmemişse 404) |
 | `GET /v1/ozet` | `gun` (30), `tip`, `ekipman` | ekipman başına arıza, duruş, MTTR, MTBF, kullanılabilirlik, bakım; Pareto; 6 büyük kayıp |
-| `GET /v1/uretim` | `gun` (30), `ekipman` | biten vardiyalar: `planli_dk`, `durus_dk`, `uretilen`, `hatali`; tiplerin `idealHiz` ve `birim` değeri |
+| `GET /v1/uretim` | `gun` (30), `ekipman` | biten vardiyalar: `planli_dk` (ekipmanın o vardiyada kullanıldığı süre, planlı bakım düşülmüş; surum 4), `durus_dk`, `uretilen`, `hatali`; tiplerin `idealHiz` ve `birim` değeri |
 | `GET /v1/cozenler` | `gun` (90) | ekipman tipi başına teknisyen payları ve risk (`yuksek` ≥ %70, `orta` ≥ %50) |
 | `GET /v1/bulgular` | `gun` (90) | tekrarlayan gün, tek kişiye bağımlılık, geciken bakım |
 | `GET /v1/pano` | – | arayüzün tek isteği (dakikada bir hesaplanır) |
@@ -56,3 +56,6 @@ POST /v1/arizalar/G-20261124-1a2b3c4d/kapat
 ```
 
 Kurallar: Tür ekipmanın tipine ait olmalı. Kişi alanları kişi kodu olmalı (`/v1/ana-veriler`). Metinler en fazla 300 karakter olabilir ve kontrol karakteri içeremez. Zaman 7 günden eski ya da gelecekte olamaz. Sentetik kayıt kapatılamaz.
+
+
+**Bakım durumu (ekipman satırında `bakim`):** `sonBakim`, `sonrakiPlan`, `gecikmede`, `gecikmeGun`, `bakimdanBeriSaat` (bakımdan beri çalışılan saat, sayaç) ve `periyotSaat` (bir takvim periyodunun ortalama çalışma saati). Sayaç alanları surum 4 ile geldi.

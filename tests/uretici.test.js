@@ -1,7 +1,7 @@
 // Üretici: aynı gün aynı çıktı, desenler gerçekten veride var.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gunuUret, bakimDurumu, izinde, varsayilanSenaryo } from '../src/cekirdek/uretici.js';
+import { gunuUret, bakimDurumu, bakimdanBeriKullanimDk, izinde, nominalGunlukDk, varsayilanSenaryo } from '../src/cekirdek/uretici.js';
 import { EKIPMANLAR, KISILER, turBul } from '../src/cekirdek/katalog.js';
 import { gunEkle, haftaGunu, anMs } from '../src/cekirdek/zaman.js';
 
@@ -49,8 +49,13 @@ test('desen: sorter onarımlarını çoğunlukla Murat Kaya yapar; izindeyken on
 
 test('desen: aşınan türler bakım yaklaştıkça ve bakım gecikince sıklaşır; ayar türleri bakımdan hemen sonra', () => {
   const ekipman = (kod) => EKIPMANLAR.find((e) => e.kod === kod);
-  // Arızanın bakım döngüsündeki konumu (bakımdan sonra geçen gün / periyot)
-  const konum = (k) => { const b = bakimDurumu(ekipman(k.ekipman), k.gun); return (b.bakimdanBeriGun + 0.5) / b.periyotGun; };
+  // Arızanın bakım döngüsündeki konumu: bakımdan beri çalışılan süre / bir periyodun ortalama çalışması (surum 4)
+  const konum = (k) => {
+    const e = ekipman(k.ekipman);
+    const b = bakimDurumu(e, k.gun);
+    const sb = k.vardiya === 3 && b.bakimdanBeriGun === 0 ? bakimDurumu(e, gunEkle(k.gun, -1)).sonBakim : b.sonBakim;
+    return bakimdanBeriKullanimDk(e, sb, k.gun, k.vardiya) / (b.periyotGun * nominalGunlukDk(e));
+  };
   const oran = (tur) => {
     const l = KAYITLAR.filter((k) => k.tur === tur).map(konum);
     return { gec: l.filter((x) => x >= 2 / 3 && x <= 1).length, erken: l.filter((x) => x < 1 / 3).length, n: l.length };
@@ -58,7 +63,7 @@ test('desen: aşınan türler bakım yaklaştıkça ve bakım gecikince sıklaş
   const mas = oran('RT-MAS');
   assert.ok(mas.gec > 3 * mas.erken, `RT-MAS (β 2,5) geç ${mas.gec}, erken ${mas.erken}`);
   const ayr = oran('ST-AYR');
-  assert.ok(ayr.erken > 2 * ayr.gec, `ST-AYR (β 0,6) erken ${ayr.erken}, geç ${ayr.gec}`);
+  assert.ok(ayr.erken > 1.6 * ayr.gec, `ST-AYR (β 0,6) erken ${ayr.erken}, geç ${ayr.gec}`); // beklenen oran ≈ 2,4; n ≈ 40
   const sik = oran('KV-SIK');
   assert.ok(sik.erken / sik.gec > 0.75 && sik.erken / sik.gec < 1.33, `KV-SIK rastgele: erken ${sik.erken}, geç ${sik.gec}`);
   // Bakım gecikince aşınan türler daha sık
@@ -83,10 +88,12 @@ test('vardiya üretimi tutarlı: duruş ≤ planlı süre, hatalı ≤ üretilen
       assert.ok(r.durus_dk <= r.planli_dk && r.hatali <= r.uretilen);
       const tip = TIPLER[EKIPMANLAR.find((e) => e.kod === r.ekipman).tip];
       const perf = r.planli_dk > r.durus_dk ? r.uretilen / ((tip.idealHiz / 60) * (r.planli_dk - r.durus_dk)) : 0;
-      assert.ok(perf <= 0.89, `${r.ekipman} perf ${perf}`);
+      if (r.planli_dk - r.durus_dk >= 30) assert.ok(perf <= 0.89, `${r.ekipman} perf ${perf}`); // kısa sürede yuvarlama oynatır
     }
     const durus = k.filter((x) => x.kayip !== 'planli').reduce((t, x) => t + x.sure_dk, 0);
-    assert.ok(Math.abs(u.reduce((t, r) => t + r.durus_dk, 0) - durus) <= durus * 0.02 + 5, 'duruşlar vardiyalara dağıtılmış');
+    // Vardiyadaki duruş, ekipmanın o vardiyada kullanılan süresiyle sınırlı (surum 4): toplam biraz azalabilir, artamaz
+    const ud = u.reduce((t, r) => t + r.durus_dk, 0);
+    assert.ok(ud <= durus && ud >= durus * 0.8, `duruşlar vardiyalara dağıtılmış: ${ud} / ${durus}`);
   }
 });
 
@@ -107,4 +114,19 @@ test('bakım durumu tutarlı: son bakım geçmişte, gecikmede değilse sıradak
   // Her bakım günü bir planlı bakım kaydı üretir.
   const planli = KAYITLAR.filter((k) => k.kayip === 'planli');
   for (const k of planli.slice(0, 50)) assert.ok(bakimDurumu(EKIPMANLAR.find((e) => e.kod === k.ekipman), k.gun).bugunBakim);
+});
+
+test('kullanım (surum 4): yoğun sezonda bir bakım periyodunda daha çok çalışılır; arıza kullanımla orantılı', async () => {
+  const { kullanimDk } = await import('../src/cekirdek/uretici.js');
+  const fl = EKIPMANLAR.find((e) => e.kod === 'FL-01');
+  const donem = (bas) => yil(bas, 30).reduce((t, g) => t + [1, 2, 3].reduce((u, v) => u + kullanimDk(fl, g, v), 0), 0) / 60;
+  const mayis = donem('2026-05-01'), kasim = donem('2026-11-01');
+  assert.ok(kasim > mayis * 1.3, `30 günde çalışma: mayıs ${mayis.toFixed(0)} sa, kasım ${kasim.toFixed(0)} sa`);
+  for (const g of yil('2026-03-01', 30)) for (const v of [1, 2, 3]) assert.ok(kullanimDk(fl, g, v) >= 0 && kullanimDk(fl, g, v) <= 480);
+  // Sorter yalnız 1-2. vardiyada çalışır
+  assert.equal(kullanimDk(EKIPMANLAR.find((e) => e.kod === 'SR-01'), '2026-03-03', 3), 0);
+  // Arıza sayısı kullanım saatine oranla, takvime oranla olduğundan daha düzgün: kasım/mayıs arıza oranı kullanım oranına yakın
+  const ariza = (bas) => KAYITLAR.filter((k) => k.ekipman.startsWith('FL') && k.kayip !== 'planli' && k.gun >= bas && k.gun < gunEkle(bas, 30)).length;
+  const oranAriza = ariza('2025-12-01') / ariza('2026-05-01');
+  assert.ok(oranAriza > 1.15, `aralık/mayıs arıza oranı ${oranAriza.toFixed(2)}`);
 });
