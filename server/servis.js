@@ -15,11 +15,11 @@ export class KuralHatasi extends Error {
 export const API_SURUMU = 'v1';
 const METIN_SINIRI = 300;
 
-/** Dönem (gün sayısı): 1-365, varsayılan verilen değer. */
+/** Dönem (gün sayısı): 1-1100 (3 yıllık geçmiş), varsayılan verilen değer. */
 const donem = (v, varsayilan) => {
   if (v == null || v === '') return varsayilan;
   const n = Number(v);
-  if (!Number.isInteger(n) || n < 1 || n > 365) throw new KuralHatasi('Dönem 1 ile 365 gün arasında bir tam sayı olmalı.');
+  if (!Number.isInteger(n) || n < 1 || n > 1100) throw new KuralHatasi('Dönem 1 ile 1100 gün arasında bir tam sayı olmalı.');
   return n;
 };
 
@@ -133,12 +133,12 @@ export function servisOlustur({ store, simdi = Date.now, senaryo = varsayilanSen
     },
 
     cozenler(q = {}) {
-      const n = donem(q.gun, 90);
+      const n = donem(q.gun, 180);
       return { donemGun: n, tipler: cozenDagilimi(donemKayitlari(n)) };
     },
 
     bulgular(q = {}) {
-      const n = donem(q.gun, 90);
+      const n = donem(q.gun, 180); // gerçek sıklıkta desen görmek için 6 ay gerekir (surum 6)
       return { donemGun: n, bulgular: bulgular(donemKayitlari(n), bugun()) };
     },
 
@@ -164,7 +164,8 @@ export function servisOlustur({ store, simdi = Date.now, senaryo = varsayilanSen
       const an = simdi();
       const anahtar = Math.floor(an / 60_000);
       if (panoOnbellek.anahtar === anahtar) return panoOnbellek.veri;
-      const k90 = donemKayitlari(90);
+      const k180 = donemKayitlari(180); // bulgular ve çözen dağılımı 6 ayda anlamlı (gerçek sıklık, surum 6)
+      const k90 = k180.filter((k) => k.baslangic >= anMs(gunEkle(bugun(), -89)));
       const k30 = k90.filter((k) => k.baslangic >= anMs(gunEkle(bugun(), -29)));
       const son24 = k90.filter((k) => k.baslangic >= an - GUN_MS && k.kayip !== 'planli');
       const ozet30 = ekipmanOzeti(k30, 30, bugun());
@@ -182,8 +183,8 @@ export function servisOlustur({ store, simdi = Date.now, senaryo = varsayilanSen
         ekipmanlar30: ozet30,
         pareto30: pareto(k30).slice(0, 10),
         kayiplar30: kayipDagilimi(k30),
-        cozenler90: cozenDagilimi(k90),
-        bulgular90: bulgular(k90, bugun()),
+        cozenler180: cozenDagilimi(k180),
+        bulgular180: bulgular(k180, bugun()),
       };
       panoOnbellek = { anahtar, veri };
       return veri;

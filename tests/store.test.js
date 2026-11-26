@@ -24,7 +24,9 @@ test('gün yeniden yazılırsa çift kayıt olmaz, gerçek kayıtlara dokunulmaz
 
 test('görünürlük: gelecekteki kayıt yok, süren arıza açık ve sonucu gizli', () => {
   const s = yeniDepo();
-  const gun = '2026-11-20';
+  // Gerçek sıklıkta (surum 6) her gün 10 dakikayı geçen bir kayıt olmayabilir: olan ilk günü al.
+  const gun = ['2026-11-20', '2026-11-19', '2026-11-18', '2026-11-17', '2026-11-16', '2026-11-15', '2026-11-14']
+    .find((g) => gunuUret(g).some((k) => k.sure_dk >= 10));
   const uretilen = gunuUret(gun);
   s.gunuYaz(gun, uretilen, '1');
   const hedef = uretilen.find((k) => k.sure_dk >= 10);
@@ -45,9 +47,9 @@ test('zamanlayıcı eksik günleri tamamlar, ikinci çalıştırmada bir şey ya
   const ilk = uretimiTamamla({ store: s, simdi, gecmisGun: 10 });
   assert.equal(ilk.uretilenGun, 12); // 10 geçmiş + bugün + yarın
   assert.equal(uretimiTamamla({ store: s, simdi, gecmisGun: 10 }).uretilenGun, 0);
-  // 400 gün sonra: hepsi saklama süresini aşar
-  const sonra = uretimiTamamla({ store: s, simdi: anMs('2027-12-31', 12), gecmisGun: 0 });
+  // 1200 gün sonra: hepsi saklama süresini (1100 gün, 3 yıllık analiz için) aşar
+  const sonra = uretimiTamamla({ store: s, simdi: anMs('2030-03-10', 12), gecmisGun: 0 });
   assert.ok(sonra.silinen > 0);
   assert.ok(s.aylikOzet().length > 0);
-  assert.equal(s.kayitlar({ simdi: anMs('2027-12-31', 12), bit: anMs('2026-12-01') }).length, 0);
+  assert.equal(s.kayitlar({ simdi: anMs('2030-03-10', 12), bit: anMs('2026-12-01') }).length, 0);
 });

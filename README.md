@@ -32,7 +32,7 @@ Node.js 22.13 ya da üstü gerekir.
 
 ```bash
 npm install
-npm run start:dev                       # http://localhost:8080 (ilk açılışta 360 günlük geçmiş üretilir)
+npm run start:dev                       # http://localhost:8080 (ilk açılışta 3 yıllık geçmiş üretilir, ~10 sn)
 npm test                                # üretici desenleri, analiz, depo, API ve MCP testleri
 npm run uret -- --goster 2026-11-27     # bir günü yazmadan ekrana dök
 ```
@@ -47,8 +47,8 @@ npm run uret -- --goster 2026-11-27     # bir günü yazmadan ekrana dök
 | `GET /v1/ozet?gun=30&tip=forklift` | Ekipman başına MTTR/MTBF/kullanılabilirlik, Pareto, kayıplar |
 | `GET /v1/ekipman`, `GET /v1/ekipman/{kod}` | Ekipman ve bakım durumu, tek ekipman detayı |
 | `GET /v1/uretim?gun=30&ekipman=SR-01` | Biten vardiyalarda planlı süre, duruş, iş adedi, hatalı (OEE girdisi) |
-| `GET /v1/cozenler?gun=90` | Kim çözüyor, tek kişiye bağımlılık riski |
-| `GET /v1/bulgular?gun=90` | Dikkat çekenler |
+| `GET /v1/cozenler?gun=180` | Kim çözüyor, tek kişiye bağımlılık riski |
+| `GET /v1/bulgular?gun=180` | Dikkat çekenler |
 | `GET /v1/ana-veriler` | Ekipman, arıza türü, kişi, kayıp kodları |
 | `POST /v1/arizalar` (anahtar) | Gerçek arıza bildir |
 | `POST /v1/arizalar/{id}/kapat` (anahtar) | Gerçek arızayı kapat |

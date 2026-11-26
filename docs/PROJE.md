@@ -94,6 +94,24 @@ RT-03 + RT-HID + cuma (1. ve 2. vardiya): ayrıca %65 olasılıkla 1 arıza
 Çözen: uzmanlık³ × (vardiyada 1 · vardiya dışı 0,5) ağırlıkla; izindeki seçilmez; uzmanlık < 0,5 ise süre × 2,2
 ```
 
+**Gerçek sıklık (surum 6, 26.11.2026): veri sahadakinin 10-20 katıydı.** surum 5'e kadar forklift başına yılda ~160 kayıt vardı (sahada ~10), tek bir reach truckta (RT-03) yılda 68 cuma hidrolik arızası. İki neden: senaryoda bütün oranları 3'le çarpan `yogunluk: 3` ve tür oranlarının kendisi.
+
+| Ekipman başına yılda | surum 5 | surum 6 | Sahada |
+| --- | --- | --- | --- |
+| Forklift: bütün kayıtlar | ~160 | ~9 | 5-15 |
+| Forklift: teknisyen arızası | ~63 | ~4 | ayda birkaç değil, yılda birkaç |
+| Forklift hidrolik kaçak | 32 | ~2 | 1-3 |
+| Konveyör hattı | ~330 | ~32 | sıkışmaların yalnız kayda girenleri |
+| RT-03 cuma hidrolik (kronik kusur) | ~68 | ~20 | ayda 1-2 |
+
+- **Nasıl ayarlandı:** Her türe sahada kayda giren yıllık sıklık yazıldı (katalogda tür satırının üstünde `// yılda ~N / ekipman (gerekçe)`), oran buna göre hesaplandı, `yogunluk` 1 oldu. Test: `gerçek sıklık (surum 6)`.
+- **Bu yapı uygun değil, şöyle uygulanır:** Sentetik veride desen görünsün diye sıklığı artırmak, bütün analizi geçersiz kılar. Analiz o veride çok başarılı görünüyordu (24/24 doğru, "forklift bakımı 30 → 13 gün"), ama gerçek sıklıkta öneri tersine döndü (30 gün yeterli). Desen görmek için gereken, daha çok arıza değil **daha uzun geçmiştir**.
+- **Sonuçları:**
+  - Geçmiş 1 yıldan **3 yıla** çıktı (`GECMIS_GUN=1095`, saklama 1100 gün). Bakım yazılımları gerçekte de yılları saklar. Ekipman devreye girmeden önce veri üretilmez (FL-08 2024'te, ST-02 2024 başında alındı).
+  - Bulgular ve "kim çözüyor" **180 günle** hesaplanıyor (90 günde RT-03'ün cuma deseni bazen görünüyor, bazen görünmüyordu).
+  - Testlerde iki senaryo var: üreticinin mantığı (aşınma, kullanım, izin) **15 kat yoğunlukla** denetlenir, çünkü gerçek sıklıkta bir yılda bu desenleri ayırt edecek olay yok; gerçekçilik ayrıca varsayılan senaryoyla denetlenir.
+- **Burada bir test daha yapalım:** Sahadan bir bakım şefine katalogdaki "yılda ~N" tablosunu göster; hangi sayıyı yüksek ya da düşük bulduğunu sor.
+
 **Akü şarjı arıza değildir (surum 5, 26.11.2026):** surum 4'e kadar forkliftte ve reach truckta en sık "arıza" türü "akü şarjı bitti" idi (forklift başına yılda ~96). Şarjın bitmesi şarj planının işidir, ekipman bozulmamıştır; arıza kaydına girerse Pareto'nun tepesine yerleşir ve asıl bozulmaları gizler. Bu yüzden çıkarıldı. `FL-AKU` ve `RT-AKU` kodları kaldı ama artık yalnız gerçek arızayı anlatıyor: **akü soketi ya da kablosu hasarlı** (oran 0,0015 ve 0,0012; teknisyen gerekir, MTTR 45 dk). Sonuç: forklift başına yılda ~163 kayıt (63'ü arıza).
 - **Şöyle daha iyi olur:** Sahada bakım ekibi gerektiren forklift arızası ayda birkaç tanedir. Burada hidrolik kaçak tek başına yılda 32. Yoğunluğu düşürmek veriyi gerçekçi yapar, ama analizin aşınmayı görebilmesi için gereken arıza sayısı da azalır. Karar bekliyor.
 
@@ -127,7 +145,7 @@ Ortak kalıp: [sunucu/README.md](https://github.com/ysfdurak/ysfdurak.com/blob/m
 | Dosya | Neyi kanıtlıyor |
 | --- | --- |
 | `uretici.test.js` | Aynı gün aynı çıktı. Kayıtlar tutarlı. RT-03 cuma payı %40'ın üstünde. Sorter'da Murat'ın payı %70'in üstünde, izindeyken ortalama onarım 1,4 katından uzun. Geciken bakımda arıza 1,4 katından sık. Otonom bakımdan sonra forklift arızası azalıyor. |
-| `analiz.test.js` | MTTR, MTBF ve kullanılabilirlik elle hesaplananla aynı. Pareto sırası ve kümülatif doğru. Üç farklı 90 günlük dönemde bulgular **yalnız** RT-03 cuma ve sorter/Murat. |
+| `analiz.test.js` | MTTR, MTBF ve kullanılabilirlik elle hesaplananla aynı. Pareto sırası ve kümülatif doğru. Üç farklı 180 günlük dönemde bulgular **yalnız** RT-03 cuma ve sorter/Murat. |
 | `store.test.js` | Yeniden yazmada çift kayıt yok. Gelecek kayıt görünmüyor, açık arızanın sonucu gizli. Zamanlayıcı ikinci çalıştırmada bir şey yapmıyor, eski kayıt özetleniyor. |
 | `api.test.js` | Güvenlik başlıkları, 400/404, gelecek kaydın 404 dönmesi, yazmada 401/403/413/409, hız sınırında 429, MCP anahtarsız 401, araçların salt okuma olması. |
 | `gercek-ip.test.js` | Sahte `X-Forwarded-For` / `CF-Connecting-IP` ile hız sınırı atlatılamıyor. |
@@ -201,6 +219,7 @@ Panodaki "Dikkat çekenler"de KV-02 pazartesi bulgusu çıkmalı (90 günde yakl
 
 | Tarih | Değişiklik |
 | --- | --- |
+| 26.11.2026 | surum 6: gerçek sıklık. Veri sahadakinin 10-20 katıydı (`yogunluk: 3` + yüksek oranlar); tür başına gerekçeli yıllık sıklık, `yogunluk` 1, RT-03 deseni ayda 1-2. Geçmiş 3 yıl (`GECMIS_GUN=1095`), ekipman devreye girmeden veri yok; bulgular ve çözenler 180 gün. Desen testleri 15 kat yoğun senaryoyla, gerçekçilik ayrı testle. 24 test. |
 | 26.11.2026 | surum 5: akü şarjının bitmesi arıza sayılmıyor; FL-AKU/RT-AKU artık "akü soketi / kablosu hasarlı" (seyrek, teknisyen). Veri açılışta yeniden üretilir. 23 test. |
 | 26.11.2026 | V3 (surum 4): kullanım. Vardiyada kullanılan süre sezon, gün ve vardiyaya göre değişir; arıza olasılığı kullanımla orantılı, aşınma bakımdan beri çalışılan süreyle ilerler. Bakım durumuna sayaç (`bakimdanBeriSaat`, `periyotSaat`). Planlı süre = kullanım. 23 test (kullanım deseni eklendi; aşınma testi çalışma saatine göre). |
 | 25.11.2026 | Ortak ölçüm ve geri bildirim (olcum.ysfdurak.com), yalnız ariza.ysfdurak.com'da; tek ekran "pano". Pano dakikada bir kendini yenilediği için süre yalnız sekme görünür ve kişi son 60 sn'de etkileşimdeyken sayılır: duvar ekranında açık kalan sekme süreyi şişirmez. CSP yalnız bu adres için genişletildi. Kurum kurulumunda betik yüklenmez. |

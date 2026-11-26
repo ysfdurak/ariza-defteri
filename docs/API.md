@@ -35,11 +35,11 @@ Temel adres: `https://ariza.ysfdurak.com` (iç ağdan: `http://ariza-defteri:808
 | `GET /v1/arizalar/{id}` | – | tek kayıt (saati gelmemişse 404) |
 | `GET /v1/ozet` | `gun` (30), `tip`, `ekipman` | ekipman başına arıza, duruş, MTTR, MTBF, kullanılabilirlik, bakım; Pareto; 6 büyük kayıp |
 | `GET /v1/uretim` | `gun` (30), `ekipman` | biten vardiyalar: `planli_dk` (ekipmanın o vardiyada kullanıldığı süre, planlı bakım düşülmüş; surum 4), `durus_dk`, `uretilen`, `hatali`; tiplerin `idealHiz` ve `birim` değeri |
-| `GET /v1/cozenler` | `gun` (90) | ekipman tipi başına teknisyen payları ve risk (`yuksek` ≥ %70, `orta` ≥ %50) |
-| `GET /v1/bulgular` | `gun` (90) | tekrarlayan gün, tek kişiye bağımlılık, geciken bakım |
+| `GET /v1/cozenler` | `gun` (180) | ekipman tipi başına teknisyen payları ve risk (`yuksek` ≥ %70, `orta` ≥ %50) |
+| `GET /v1/bulgular` | `gun` (180; gerçek sıklıkta desen görmek için 6 ay gerekir) | tekrarlayan gün, tek kişiye bağımlılık, geciken bakım |
 | `GET /v1/pano` | – | arayüzün tek isteği (dakikada bir hesaplanır) |
 
-`gun` 1-365 arasında olmalıdır, aksi hâlde `400` döner.
+`gun` 1-1100 arasında olmalıdır (3 yıllık geçmiş), aksi hâlde `400` döner.
 
 ## Yazma (anahtar gerekir)
 

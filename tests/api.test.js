@@ -21,7 +21,7 @@ async function kur(ek = {}) {
   const config = loadConfig({ DATA_DIR: dizin, APP_URL: 'https://ariza.ornek.test/', YAZMA_ANAHTARLARI: YAZMA, MCP_ENABLED: 'true', MCP_ANAHTARLARI: MCP, ...ek });
   assert.deepEqual(config.errors, []);
   const store = openStore(config.dbFile);
-  uretimiTamamla({ store, simdi: SIMDI, gecmisGun: 95 });
+  uretimiTamamla({ store, simdi: SIMDI, gecmisGun: 185 }) // bulgular 180 günle çalışır;
   let an = SIMDI;
   const app = createApp({ config, store, simdi: () => an });
   const server = createServer(app.handle);
@@ -40,7 +40,7 @@ test('okuma API\'si: durum, liste, tek kayıt, pano, güvenlik başlıkları', a
     for (const b of ['content-security-policy', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy']) assert.ok(d.basliklar.get(b), b);
     assert.equal(d.basliklar.get('cache-control'), 'no-store');
 
-    const l = await iste('/v1/arizalar?gun=1&limit=500');
+    const l = await iste('/v1/arizalar?gun=7&limit=500'); // gerçek sıklıkta günde 1-3 kayıt
     assert.equal(l.durum, 200);
     assert.ok(l.govde.kayitlar.length > 0);
     assert.ok(l.govde.kayitlar.every((k) => k.baslangic <= '2026-11-24T14:30:00+03:00'), 'gelecek kayıt sızmamalı');
@@ -50,7 +50,7 @@ test('okuma API\'si: durum, liste, tek kayıt, pano, güvenlik başlıkları', a
     const p = await iste('/v1/pano');
     assert.equal(p.durum, 200);
     assert.equal(p.govde.ekipmanlar30.length, 18);
-    assert.ok(p.govde.bulgular90.some((b) => b.ekipman === 'RT-03'));
+    assert.ok(p.govde.bulgular180.some((b) => b.ekipman === 'RT-03'));
 
     for (const yol of ['/v1/uretim?gun=3', '/v1/ozet?gun=7', '/v1/cozenler', '/v1/bulgular', '/v1/ana-veriler', '/v1/ekipman', '/v1/ekipman/RT-03']) assert.equal((await iste(yol)).durum, 200, yol);
 
@@ -131,7 +131,7 @@ test('MCP: anahtarsız 401, araç listesi ve salt okuma çağrısı', async () =
     const adlar = l.govde.result.tools.map((t) => t.name);
     assert.deepEqual(adlar.sort(), ['ana_veriler', 'arizalari_listele', 'bulgular', 'durum', 'ekipman_detayi', 'ekipman_ozeti', 'kim_cozuyor', 'pareto', 'vardiya_uretimi']);
     assert.ok(l.govde.result.tools.every((t) => t.annotations.readOnlyHint === true));
-    const c = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'bulgular', arguments: { gun: 90 } } });
+    const c = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'bulgular', arguments: {} } }); // varsayılan 180 gün
     const veri = JSON.parse(c.govde.result.content[0].text);
     assert.ok(veri.bulgular.some((b) => b.ekipman === 'RT-03'));
     const h = await rpc({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'ekipman_detayi', arguments: { kod: 'YOK-1' } } });

@@ -114,8 +114,8 @@ async function yukle() {
     $('k-kul').textContent = yuzde(veri.kullanilabilirlik30, 1);
     $('guncel').textContent = `Güncellendi ${gunSaat(veri.simdi)}`;
     akis(veri.akis);
-    bulgular(veri.bulgular90);
-    kimler(veri.cozenler90);
+    bulgular(veri.bulgular180);
+    kimler(veri.cozenler180);
     pareto(veri.pareto30, veri.kayiplar30);
     ekipman(veri.ekipmanlar30);
   } catch (err) {
