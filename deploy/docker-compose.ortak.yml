@@ -6,6 +6,7 @@
 name: ariza-defteri
 services:
   ariza-defteri:
+    init: true  # PID 1 olarak tini: alt süreçleri toplar (zombie birikmez), sinyalleri düzgün iletir
     build: ..
     container_name: ariza-defteri
     env_file: ../.env
