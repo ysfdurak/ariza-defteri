@@ -1,5 +1,5 @@
 // Elle üretim (sunucu zaten saatlik kendisi üretir; bu araç yeniden üretmek ya da denemek içindir).
-//   node tools/uret.js                      eksik günleri tamamla (geçmiş 180 gün + bugün + yarın)
+//   node tools/uret.js                      eksik günleri tamamla (geçmiş GECMIS_GUN, varsayılan 1095 gün + bugün + yarın)
 //   node tools/uret.js --gun 30 --yeniden   son 30 günü + bugün + yarını baştan üret (senaryo.json değiştiyse)
 //   node tools/uret.js --goster 2026-11-27  bir günü veritabanına yazmadan ekrana dök
 // Sunucuda: sudo docker exec ariza-defteri node --disable-warning=ExperimentalWarning tools/uret.js --gun 30 --yeniden
@@ -22,7 +22,7 @@ if (values.goster) {
 const config = loadConfig();
 mkdirSync(config.dataDir, { recursive: true });
 const store = openStore(config.dbFile);
-const gecmisGun = values.gun != null ? Math.max(0, Math.min(360, Number(values.gun) || 0)) : config.gecmisGun;
+const gecmisGun = values.gun != null ? Math.max(0, Math.min(1095, Number(values.gun) || 0)) : config.gecmisGun;
 const s = uretimiTamamla({ store, gecmisGun, yeniden: !!values.yeniden, log: console.log });
 console.log(`Tamam: ${s.uretilenGun} gün, ${s.kayit} kayıt.`);
 store.close();
