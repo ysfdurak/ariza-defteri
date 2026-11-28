@@ -112,9 +112,13 @@ test('yazma: anahtarsız 401, yabancı kaynak 403, büyük gövde 413, anahtarla
 test('hız sınırı 429', async () => {
   const { iste, kapat } = await kur({ DAKIKALIK_ISTEK: '5' });
   try {
+    // Caddy'den geçen dış ziyaretçi: X-Forwarded-For'da genel adres
+    const dis = { headers: { 'x-forwarded-for': '203.0.113.7' } };
     const sonuclar = [];
-    for (let i = 0; i < 7; i++) sonuclar.push((await iste('/v1/durum')).durum);
+    for (let i = 0; i < 7; i++) sonuclar.push((await iste('/v1/durum', dis)).durum);
     assert.deepEqual(sonuclar.slice(-2), [429, 429]);
+    // İç ağdan doğrudan gelen servis (Nabız): X-Forwarded-For yok, sınıra girmez
+    for (let i = 0; i < 7; i++) assert.equal((await iste('/v1/durum')).durum, 200, 'iç ağ servisi sınırsız');
     assert.equal((await iste('/healthz')).durum, 200, 'sağlık denetimi sınırsız');
   } finally { await kapat(); }
 });

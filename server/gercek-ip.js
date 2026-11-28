@@ -32,3 +32,13 @@ export function gercekIp(req) {
   const bulut = temiz(req.headers['cf-connecting-ip']);
   return icinde(cf, es) && isIP(bulut) ? bulut : es;
 }
+
+/**
+ * İstek aynı sunucudaki başka bir servisten mi geliyor (Nabız, Nabız Analiz)? Ters vekilden geçen her istekte
+ * Caddy X-Forwarded-For'a dış istemciyi yazar, gerçek IP de genel bir adres çıkar; Docker iç ağından doğrudan gelen
+ * istekte X-Forwarded-For yoktur ve adres özel aralıktadır. Dışarıdan biri özel adres taklit edemez: X-Forwarded-For'un
+ * son elemanını Caddy yazar ve uygulamaların hiçbir portu dışarı açık değildir.
+ */
+export function icAgMi(req) {
+  return icinde(ozel, gercekIp(req));
+}

@@ -3,7 +3,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { gercekIp } from './gercek-ip.js';
+import { gercekIp, icAgMi } from './gercek-ip.js';
 import { KuralHatasi, servisOlustur } from './servis.js';
 import { createMcpHandler } from './mcp.js';
 
@@ -142,7 +142,9 @@ export function createApp({ config, store, log = () => {}, simdi = Date.now }) {
     const path = url.pathname;
     try {
       if (path === '/healthz') return json(res, 200, { ok: true });
-      if (!hizSiniri(ziyaretci(req))) {
+      // İç ağdaki servisler (Nabız, Nabız Analiz) sınıra girmez: kullanıcıların hepsi onlar üzerinden aynı adresten
+      // gelir ve yoğun anda dakikada 60 istekte kesilirlerdi (28 Kasım 2026 yük testi bulgusu).
+      if (!icAgMi(req) && !hizSiniri(ziyaretci(req))) {
         res.setHeader('Retry-After', '60');
         return json(res, 429, { hata: 'Çok hızlı istek gönderiyorsun. Bir dakika sonra tekrar dene.' });
       }
